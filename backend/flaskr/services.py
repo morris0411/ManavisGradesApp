@@ -1,4 +1,4 @@
-from .models import Student
+from .models import Students
 from sqlalchemy import or_
 
 

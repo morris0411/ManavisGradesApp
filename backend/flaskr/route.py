@@ -1,14 +1,13 @@
 from flask import Blueprint, jsonify, request
 from .services import search_students
 from . import db
-from .models import Student
+from .models import Students
 from .models import ExamMaster
 from sqlalchemy import text
 from .models import SubjectMaster
 import pandas as pd
 import os
 import openpyxl
-
 
 bp = Blueprint("api", __name__)
 
@@ -32,15 +31,15 @@ def health():
 @bp.route("/api/seed", methods=["POST"]) 
 def seed():
     # 初期データを投入（重複を避けるため存在チェック）
-    if Student.query.count() == 0:
+    if Students.query.count() == 0:
         samples = [
-            Student(name="田中太郎", subject="数学", score=85),
-            Student(name="佐藤花子", subject="英語", score=92),
-            Student(name="鈴木一郎", subject="理科", score=78),
+            Students(name="田中太郎", subject="数学", score=85),
+            Students(name="佐藤花子", subject="英語", score=92),
+            Students(name="鈴木一郎", subject="理科", score=78),
         ]
         db.session.add_all(samples)
         db.session.commit()
-    return jsonify({"seeded": True, "count": Student.query.count()})
+    return jsonify({"seeded": True, "count": Students.query.count()})
 
 
 @bp.route("/api/seed_exam_master", methods=["POST"])
@@ -93,12 +92,6 @@ def seed_exam_master():
     
 @bp.route("/api/seed_subject_master", methods=["POST"])
 def import_subject_master():
-    import os
-    import pandas as pd
-    from flask import jsonify
-    from .models import SubjectMaster
-    from . import db
-
     file_path = r"C:\ManavisGradesApp\backend\科目コード.csv"
 
     # ✅ UTF-8(BOM付き含む)で安全に読み込み

@@ -1,104 +1,110 @@
 from datetime import date
 from . import db
 
-# --- Students ---
-class Student(db.Model):
-    __tablename__ = "students"
+
+class Students(db.Model):
+    __tablename__ = 'students'
+
     student_id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String)
-    school_name = db.Column(db.String)
-    grade = db.Column(db.Integer)
-    admission_date = db.Column(db.Date)
-
-    exam_results = db.relationship("ExamResult", backref="student")
+    name = db.Column(db.String, nullable=False)
+    school_name = db.Column(db.String, nullable=False)
+    grade = db.Column(db.String, nullable=False)
+    admission_date = db.Column(db.Date, nullable=False)
 
 
-# --- Exam_master ---
 class ExamMaster(db.Model):
-    __tablename__ = "exam_master"
+    __tablename__ = 'exam_master'
+
     exam_code = db.Column(db.Integer, primary_key=True)
-    exam_name = db.Column(db.String)
-
-    exams = db.relationship("Exam", backref="exam_master")
+    exam_name = db.Column(db.String, nullable=False, unique=True)
 
 
-# --- Exams ---
-class Exam(db.Model):
-    __tablename__ = "exams"
+class Exams(db.Model):
+    __tablename__ = 'exams'
+
     exam_id = db.Column(db.Integer, primary_key=True)
-    exam_code = db.Column(db.Integer, db.ForeignKey("exam_master.exam_code"))
-    exam_year = db.Column(db.Integer)
-    exam_type = db.Column(db.String)
+    exam_code = db.Column(db.Integer, db.ForeignKey('exam_master.exam_code'), nullable=False)
+    exam_year = db.Column(db.Integer, nullable=False)
+    exam_type = db.Column(db.String, nullable=False)
 
-    exam_results = db.relationship("ExamResult", backref="exam")
+    exam_master = db.relationship('ExamMaster', backref=db.backref('exams', lazy=True))
 
 
-# --- ExamResults ---
-class ExamResult(db.Model):
-    __tablename__ = "exam_results"
+class ExamResults(db.Model):
+    __tablename__ = 'exam_results'
+
     result_id = db.Column(db.Integer, primary_key=True)
-    student_id = db.Column(db.Integer, db.ForeignKey("students.student_id"))
-    exam_id = db.Column(db.Integer, db.ForeignKey("exams.exam_id"))
-    uploaded_by = db.Column(db.Integer, db.ForeignKey("users.user_id"))
+    student_id = db.Column(db.Integer, db.ForeignKey('students.student_id'), nullable=False)
+    exam_id = db.Column(db.Integer, db.ForeignKey('exams.exam_id'), nullable=False)
+    uploaded_by = db.Column(db.Integer, nullable=False)
 
-    subject_scores = db.relationship("SubjectScore", backref="exam_result")
-    exam_judgements = db.relationship("ExamJudgement", backref="exam_result")
+    student = db.relationship('Students', backref=db.backref('exam_results', lazy=True))
+    exam = db.relationship('Exams', backref=db.backref('exam_results', lazy=True))
 
 
-# --- Subject_master ---
 class SubjectMaster(db.Model):
-    __tablename__ = "subject_master"
+    __tablename__ = 'subject_master'
+
     subject_code = db.Column(db.Integer, primary_key=True)
-    subject_name = db.Column(db.String)
-
-    subject_scores = db.relationship("SubjectScore", backref="subject_master")
+    subject_name = db.Column(db.String, nullable=False)
 
 
-# --- SubjectScores ---
-class SubjectScore(db.Model):
-    __tablename__ = "subject_scores"
+class SubjectScores(db.Model):
+    __tablename__ = 'subject_scores'
+
     score_id = db.Column(db.Integer, primary_key=True)
-    result_id = db.Column(db.Integer, db.ForeignKey("exam_results.result_id"))
-    subject_code = db.Column(db.Integer, db.ForeignKey("subject_master.subject_code"))
-    score = db.Column(db.Integer)
-    deviation_value = db.Column(db.Numeric(5, 2))
+    result_id = db.Column(db.Integer, db.ForeignKey('exam_results.result_id'), nullable=False)
+    subject_code = db.Column(db.Integer, db.ForeignKey('subject_master.subject_code'), nullable=False)
+    score = db.Column(db.Integer, nullable=False)
+    deviation_value = db.Column(db.Numeric(5, 2), nullable=False)
+
+    exam_result = db.relationship('ExamResults', backref=db.backref('subject_scores', lazy=True))
+    subject = db.relationship('SubjectMaster', backref=db.backref('subject_scores', lazy=True))
 
 
-# --- ExamJudgements ---
-class ExamJudgement(db.Model):
-    __tablename__ = "exam_judgements"
+class Universities(db.Model):
+    __tablename__ = 'universities'
+
+    university_id = db.Column(db.Integer, primary_key=True)
+    university_name = db.Column(db.String, nullable=False, unique=True)
+
+
+class Faculties(db.Model):
+    __tablename__ = 'faculties'
+
+    faculty_id = db.Column(db.Integer, primary_key=True)
+    university_id = db.Column(db.Integer, db.ForeignKey('universities.university_id'), nullable=False)
+    faculty_name = db.Column(db.String, nullable=False, unique=True)
+
+    university = db.relationship('Universities', backref=db.backref('faculties', lazy=True))
+
+
+class Departments(db.Model):
+    __tablename__ = 'departments'
+
+    department_id = db.Column(db.Integer, primary_key=True)
+    faculty_id = db.Column(db.Integer, db.ForeignKey('faculties.faculty_id'), nullable=False)
+    department_name = db.Column(db.String, nullable=False)
+
+    faculty = db.relationship('Faculties', backref=db.backref('departments', lazy=True))
+
+
+class ExamJudgements(db.Model):
+    __tablename__ = 'exam_judgements'
+
     judgement_id = db.Column(db.Integer, primary_key=True)
-    result_id = db.Column(db.Integer, db.ForeignKey("exam_results.result_id"))
+    result_id = db.Column(db.Integer, db.ForeignKey('exam_results.result_id'), nullable=False)
     preference_order = db.Column(db.Integer)
-    department_id = db.Column(db.Integer, db.ForeignKey("departments.department_id"))
+    department_id = db.Column(db.Integer, db.ForeignKey('departments.department_id'))
     judgment = db.Column(db.String)
 
-
-# --- Departments ---
-class Department(db.Model):
-    __tablename__ = "departments"
-    department_id = db.Column(db.Integer, primary_key=True)
-    university_id = db.Column(db.Integer, db.ForeignKey("universities.university_id"))
-    faculty_name = db.Column(db.String)
-    department_name = db.Column(db.String)
-
-    exam_judgements = db.relationship("ExamJudgement", backref="department")
+    exam_result = db.relationship('ExamResults', backref=db.backref('exam_judgements', lazy=True))
+    department = db.relationship('Departments', backref=db.backref('exam_judgements', lazy=True))
 
 
-# --- Universities ---
-class University(db.Model):
-    __tablename__ = "universities"
-    university_id = db.Column(db.Integer, primary_key=True)
-    university_name = db.Column(db.String)
+class Users(db.Model):
+    __tablename__ = 'users'
 
-    departments = db.relationship("Department", backref="university")
-
-
-# --- Users ---
-class User(db.Model):
-    __tablename__ = "users"
     user_id = db.Column(db.Integer, primary_key=True)
-    login_id = db.Column(db.String)
-    password_hash = db.Column(db.String)
-
-    exam_results = db.relationship("ExamResult", backref="user")
+    login_id = db.Column(db.String, nullable=False, unique=True)
+    password_hash = db.Column(db.String, nullable=False)
