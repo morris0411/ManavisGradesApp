@@ -21,3 +21,15 @@ export const searchExams = async ({ year, exam_type, name }) => {
   });
   return res.data;
 };
+
+export const fetchExamResults = async (examId) => {
+  const res = await axiosClient.get(`/exams/${examId}`);
+  return res.data;
+};
+
+export const filterExamResults = async ({ exam_id, name, university, faculty, order_min, order_max }) => {
+  const res = await axiosClient.get("/exams/filter", {
+    params: { exam_id, name, university, faculty, order_min, order_max },
+  });
+  return res.data;
+};

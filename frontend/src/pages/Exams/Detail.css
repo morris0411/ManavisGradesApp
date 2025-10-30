@@ -1,0 +1,33 @@
+.search-container {
+  max-width: 960px;
+  margin: 24px auto;
+  padding: 16px;
+}
+
+.detail-back {
+  margin-bottom: 12px;
+}
+
+.detail-filters {
+  display: flex;
+  gap: 8px;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+
+.detail-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.detail-table th,
+.detail-table td {
+  border: 1px solid #e5e7eb;
+  padding: 8px 10px;
+  text-align: left;
+}
+
+.detail-table thead {
+  background: #f3f4f6;
+}

@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { fetchYears, fetchTypes, fetchNames, searchExams } from "../../api/exams";
 import "./Search.css";
 
@@ -94,7 +95,9 @@ const ExamsSearch = () => {
           {rows.map((r) => (
             <tr key={r.exam_id}>
               <td>{r.exam_year}</td>
-              <td>{r.exam_name}</td>
+              <td>
+                <Link to={`/exams/${r.exam_id}`}>{r.exam_name}</Link>
+              </td>
               <td>{r.exam_type}</td>
               <td>{r.num_students}</td>
             </tr>

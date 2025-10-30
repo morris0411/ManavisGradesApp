@@ -1,0 +1,48 @@
+.search-container {
+  max-width: 960px;
+  margin: 24px auto;
+  padding: 16px;
+}
+
+.detail-back {
+  margin-bottom: 12px;
+}
+
+.detail-section {
+  margin-bottom: 16px;
+}
+
+.detail-card {
+  border: 1px solid #e5e7eb;
+  padding: 12px;
+  border-radius: 6px;
+  margin-bottom: 12px;
+}
+
+.detail-card-header {
+  margin-bottom: 8px;
+}
+
+.detail-subtitle {
+  margin-bottom: 6px;
+}
+
+.detail-subtitle--mt {
+  margin-top: 8px;
+}
+
+.detail-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.detail-table th,
+.detail-table td {
+  border: 1px solid #e5e7eb;
+  padding: 8px 10px;
+  text-align: left;
+}
+
+.detail-table thead {
+  background: #f3f4f6;
+}

@@ -7,3 +7,8 @@ export const fetchStudents = async (keyword) => {
   });
   return res.data;
 };
+
+export const fetchStudentDetail = async (studentId) => {
+  const res = await axiosClient.get(`/students/${studentId}`);
+  return res.data;
+};

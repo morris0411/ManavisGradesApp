@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import { fetchStudents } from "../../api/students";
 import "./Search.css";
 
@@ -39,7 +40,9 @@ const StudentSearch = () => {
           {students.map((s) => (
             <tr key={s.student_id}>
               <td>{s.student_id}</td>
-              <td>{s.name}</td>
+              <td>
+                <Link to={`/students/${s.student_id}`}>{s.name}</Link>
+              </td>
               <td>{s.school_name}</td>
               <td>{s.grade}</td>
             </tr>
