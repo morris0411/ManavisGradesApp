@@ -36,7 +36,6 @@ class ExamResults(db.Model):
     result_id = db.Column(db.Integer, primary_key=True)
     student_id = db.Column(db.Integer, db.ForeignKey('students.student_id'), nullable=False)
     exam_id = db.Column(db.Integer, db.ForeignKey('exams.exam_id'), nullable=False)
-    uploaded_by = db.Column(db.Integer, nullable=False)
 
     student = db.relationship('Students', backref=db.backref('exam_results', lazy=True))
     exam = db.relationship('Exams', backref=db.backref('exam_results', lazy=True))
@@ -74,7 +73,7 @@ class Faculties(db.Model):
 
     faculty_id = db.Column(db.Integer, primary_key=True)
     university_id = db.Column(db.Integer, db.ForeignKey('universities.university_id'), nullable=False)
-    faculty_name = db.Column(db.String, nullable=False, unique=True)
+    faculty_name = db.Column(db.String, nullable=False)
 
     university = db.relationship('Universities', backref=db.backref('faculties', lazy=True))
 
@@ -96,7 +95,7 @@ class ExamJudgements(db.Model):
     result_id = db.Column(db.Integer, db.ForeignKey('exam_results.result_id'), nullable=False)
     preference_order = db.Column(db.Integer)
     department_id = db.Column(db.Integer, db.ForeignKey('departments.department_id'))
-    judgment = db.Column(db.String)
+    judgement = db.Column(db.String)
 
     exam_result = db.relationship('ExamResults', backref=db.backref('exam_judgements', lazy=True))
     department = db.relationship('Departments', backref=db.backref('exam_judgements', lazy=True))

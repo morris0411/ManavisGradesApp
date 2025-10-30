@@ -1,34 +1,17 @@
-import { useState } from "react";
-import { searchStudents } from "./api/client";
+import React from "react";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import StudentSearch from "./pages/Students/Search.jsx";
+import ExamsSearch from "./pages/Exams/Search.jsx";
+import "./index.css";
 
-function App() {
-  const [keyword, setKeyword] = useState("");
-  const [results, setResults] = useState([]);
-
-  const handleSearch = async () => {
-    const data = await searchStudents(keyword);
-    setResults(data);
-  };
-
+export default function App() {
   return (
-    <div style={{ padding: "20px" }}>
-      <h1>成績検索</h1>
-      <input
-        value={keyword}
-        onChange={(e) => setKeyword(e.target.value)}
-        placeholder="名前や科目を入力"
-      />
-      <button onClick={handleSearch}>検索</button>
-
-      <ul>
-        {results.map((s) => (
-          <li key={s.id}>
-            {s.name}（{s.subject}: {s.score}点）
-          </li>
-        ))}
-      </ul>
-    </div>
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<StudentSearch />} />
+        <Route path="/students/search" element={<StudentSearch />} />
+        <Route path="/exams/search" element={<ExamsSearch />} />
+      </Routes>
+    </BrowserRouter>
   );
 }
-
-export default App;

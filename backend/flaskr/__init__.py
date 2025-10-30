@@ -25,6 +25,14 @@ def create_app():
     db.init_app(app)
     migrate.init_app(app, db)
     CORS(app)
+    
+    # --- Blueprint登録 ---
     from .route import bp
+    from .routes.students import students_bp
+    from .routes.exams import exams_bp
+
     app.register_blueprint(bp)
+    app.register_blueprint(students_bp, url_prefix="/api")
+    app.register_blueprint(exams_bp, url_prefix="/api")
+    
     return app

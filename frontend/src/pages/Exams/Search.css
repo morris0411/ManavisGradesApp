@@ -1,0 +1,40 @@
+.search-container {
+  max-width: 960px;
+  margin: 24px auto;
+  padding: 16px;
+}
+
+.search-container h2 {
+  margin-bottom: 12px;
+}
+
+.search-container select {
+  padding: 8px 10px;
+  margin-left: 8px;
+}
+
+.search-container button {
+  padding: 8px 12px;
+  background: #2563eb;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.search-container table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 16px;
+}
+
+.search-container th,
+.search-container td {
+  border: 1px solid #e5e7eb;
+  padding: 8px 10px;
+  text-align: left;
+}
+
+.search-container thead {
+  background: #f3f4f6;
+}
