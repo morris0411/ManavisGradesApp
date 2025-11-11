@@ -30,9 +30,11 @@ def create_app():
     from .route import bp
     from .routes.students import students_bp
     from .routes.exams import exams_bp
+    from .routes.imports import imports_bp
 
     app.register_blueprint(bp)
     app.register_blueprint(students_bp, url_prefix="/api")
     app.register_blueprint(exams_bp, url_prefix="/api")
+    app.register_blueprint(imports_bp, url_prefix="/api")
     
     return app

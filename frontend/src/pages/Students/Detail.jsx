@@ -38,8 +38,10 @@ const StudentDetail = () => {
       <section className="detail-section">
         <div><strong>生徒ID:</strong> {data.student_id}</div>
         <div><strong>氏名:</strong> {data.name}</div>
+        {data.name_kana && <div><strong>氏名カナ:</strong> {data.name_kana}</div>}
         <div><strong>学校名:</strong> {data.school_name}</div>
         <div><strong>学年:</strong> {data.grade}</div>
+        <div><strong>ステータス:</strong> {data.status || '在籍'}</div>
       </section>
 
       <section>

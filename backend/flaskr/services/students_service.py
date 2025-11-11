@@ -11,7 +11,7 @@ from .. import db
 # ------------------------
 # 生徒検索（名前・高校名・マナビス生番号）
 # ------------------------
-def search_students(keyword=None):
+def search_students(keyword=None, statuses=None):
     """
     生徒名・高校名・マナビス生番号（student_id）で部分一致検索
     """
@@ -21,17 +21,23 @@ def search_students(keyword=None):
         query = query.filter(
             or_(
                 Students.name.ilike(q),
+                Students.name_kana.ilike(q),
                 Students.school_name.ilike(q),
                 Students.student_id.cast(db.String).ilike(q)
             )
         )
+    # ステータスフィルタ（在籍/既卒/退会）
+    if statuses:
+        query = query.filter(Students.status.in_(statuses))
     students = query.order_by(Students.student_id).all()
     return [
         {
             "student_id": s.student_id,
             "name": s.name,
+            "name_kana": s.name_kana,
             "school_name": s.school_name,
-            "grade": s.grade
+            "grade": s.grade,
+            "status": s.status,
         }
         for s in students
     ]
@@ -91,7 +97,7 @@ def get_student_detail(student_id):
                     "faculty_name": f.faculty_name,
                     "department_name": d.department_name,
                     "preference_order": j.preference_order,
-                    "judgement": j.judgement
+                    "judgement": (j.judgement_sougou or j.judgement_kyote or j.judgement_niji)
                 }
                 for j, d, f, u in judgements
             ],
@@ -108,6 +114,7 @@ def get_student_detail(student_id):
     return {
         "student_id": student.student_id,
         "name": student.name,
+        "name_kana": student.name_kana,
         "school_name": student.school_name,
         "grade": student.grade,
         "exams": exam_details

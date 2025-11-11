@@ -7,9 +7,11 @@ class Students(db.Model):
 
     student_id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String, nullable=False)
+    name_kana = db.Column(db.String, nullable=True)
     school_name = db.Column(db.String, nullable=False)
     grade = db.Column(db.String, nullable=False)
     admission_date = db.Column(db.Date, nullable=False)
+    status = db.Column(db.String, nullable=False, default='在籍')  # 在籍/退会/既卒
 
 
 class ExamMaster(db.Model):
@@ -95,7 +97,9 @@ class ExamJudgements(db.Model):
     result_id = db.Column(db.Integer, db.ForeignKey('exam_results.result_id'), nullable=False)
     preference_order = db.Column(db.Integer)
     department_id = db.Column(db.Integer, db.ForeignKey('departments.department_id'))
-    judgement = db.Column(db.String)
+    judgement_kyote = db.Column(db.String)
+    judgement_niji = db.Column(db.String)
+    judgement_sougou = db.Column(db.String)
 
     exam_result = db.relationship('ExamResults', backref=db.backref('exam_judgements', lazy=True))
     department = db.relationship('Departments', backref=db.backref('exam_judgements', lazy=True))

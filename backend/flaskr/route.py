@@ -22,7 +22,7 @@ def reset_dummy_data():
         db.session.query(ExamResults).delete()
         db.session.query(Departments).delete()
         db.session.query(Exams).delete()
-        db.session.query(Students).delete()
+        # Students は実データを保持するため削除しない
 
         db.session.commit()
         return jsonify({"message": "全てのダミーデータを削除しました。"}), 200
@@ -36,85 +36,96 @@ def reset_dummy_data():
 @bp.route("/api/seed_dummy_data", methods=["POST"]) 
 def seed_dummy_data():
     try:
-        # --- Students ---
-        students = [
-            Students(student_id=455387, name="清水友貴", school_name="北野", grade="高3", admission_date="2023-05-01"),
-            Students(student_id=2, name="谷口冬馬", school_name="四条畷", grade="高2", admission_date="2024-08-01")
-        ]
-        db.session.add_all(students)
+        # --- Students（存在しなければ作成）---
+        if not Students.query.get(455387):
+            s1 = Students(student_id=455387, name="清水　友貴", name_kana="シミズ　ユウキ", school_name="北野", grade="高3", status="在籍", admission_date="2023-05-01")
+            db.session.add(s1)
+        if not Students.query.get(2):
+            s2 = Students(student_id=2, name="谷口　冬馬", name_kana="タニグチ　トウマ", school_name="四条畷", grade="高2", status="在籍", admission_date="2024-08-01")
+            db.session.add(s2)
+        db.session.flush()
 
-        # --- Exams ---
-        exams = [
-            Exams(exam_id=1, exam_code=1, exam_year=2024, exam_type="共テ"),
-            Exams(exam_id=2, exam_code=2, exam_year=2024, exam_type="共テ"),
-            Exams(exam_id=3, exam_code=3, exam_year=2024, exam_type="共テ"),
-            Exams(exam_id=4, exam_code=5, exam_year=2024, exam_type="記述"),
-            Exams(exam_id=5, exam_code=6, exam_year=2024, exam_type="記述"),
-            Exams(exam_id=6, exam_code=7, exam_year=2024, exam_type="記述"),
-            Exams(exam_id=7, exam_code=24, exam_year=2024, exam_type="OP")
+        # --- Exams（PKは自動採番） ---
+        exam_specs = [
+            (1, 2024, "共テ"),
+            (2, 2024, "共テ"),
+            (3, 2024, "共テ"),
+            (5, 2024, "記述"),
+            (6, 2024, "記述"),
+            (7, 2024, "記述"),
+            (24, 2024, "OP"),
         ]
-        db.session.add_all(exams)
+        ex_objs = {}
+        for code, year, etype in exam_specs:
+            ex = Exams.query.filter_by(exam_code=code, exam_year=year, exam_type=etype).first()
+            if not ex:
+                ex = Exams(exam_code=code, exam_year=year, exam_type=etype)
+                db.session.add(ex); db.session.flush()
+            ex_objs[(code, year, etype)] = ex
 
         # --- ExamResults ---
-        exam_results = [
-            ExamResults(result_id=1, student_id=455387, exam_id=1),
-            ExamResults(result_id=2, student_id=455387, exam_id=2),
-            ExamResults(result_id=3, student_id=455387, exam_id=3),
-            ExamResults(result_id=4, student_id=455387, exam_id=4),
-            ExamResults(result_id=5, student_id=455387, exam_id=5),
-            ExamResults(result_id=6, student_id=455387, exam_id=6),
-            ExamResults(result_id=7, student_id=455387, exam_id=7)
+        er_targets = [
+            (455387, ex_objs[(1, 2024, "共テ")].exam_id),
+            (455387, ex_objs[(2, 2024, "共テ")].exam_id),
+            (455387, ex_objs[(3, 2024, "共テ")].exam_id),
+            (455387, ex_objs[(5, 2024, "記述")].exam_id),
+            (455387, ex_objs[(6, 2024, "記述")].exam_id),
+            (455387, ex_objs[(7, 2024, "記述")].exam_id),
+            (455387, ex_objs[(24, 2024, "OP")].exam_id),
         ]
-        db.session.add_all(exam_results)
+        er_objs = {}
+        for sid, eid in er_targets:
+            er = ExamResults.query.filter_by(student_id=sid, exam_id=eid).first()
+            if not er:
+                er = ExamResults(student_id=sid, exam_id=eid)
+                db.session.add(er); db.session.flush()
+            er_objs[(sid, eid)] = er
 
-        # --- SubjectScores ---
-        subject_scores = [
-            SubjectScores(score_id=1, result_id=1, subject_code=1110, score=82, deviation_value=61.7),
-            SubjectScores(score_id=2, result_id=1, subject_code=1520, score=86, deviation_value=67.9),
-            SubjectScores(score_id=3, result_id=1, subject_code=2580, score=157, deviation_value=63.2),
-            SubjectScores(score_id=4, result_id=1, subject_code=3120, score=105, deviation_value=71.9),
-            SubjectScores(score_id=5, result_id=1, subject_code=3910, score=157, deviation_value=65.5),
-            SubjectScores(score_id=6, result_id=1, subject_code=4310, score=68, deviation_value=62.6),
-            SubjectScores(score_id=7, result_id=1, subject_code=4410, score=55, deviation_value=57.3),
-            SubjectScores(score_id=8, result_id=1, subject_code=5210, score=70, deviation_value=64.5),
-            SubjectScores(score_id=9, result_id=1, subject_code=6110, score=75, deviation_value=58.4),
-            SubjectScores(score_id=10, result_id=1, subject_code=7665, score=765, deviation_value=58.4),
-            
-            SubjectScores(score_id=11, result_id=2, subject_code=1110, score=82, deviation_value=61.7),
-            SubjectScores(score_id=12, result_id=2, subject_code=1520, score=86, deviation_value=67.9),
-            SubjectScores(score_id=13, result_id=2, subject_code=2580, score=157, deviation_value=63.2),
-            SubjectScores(score_id=14, result_id=2, subject_code=3120, score=105, deviation_value=71.9),
-            SubjectScores(score_id=15, result_id=2, subject_code=3910, score=157, deviation_value=65.5),
-            SubjectScores(score_id=16, result_id=2, subject_code=4310, score=68, deviation_value=62.6),
-            SubjectScores(score_id=17, result_id=2, subject_code=4410, score=55, deviation_value=57.3),
-            SubjectScores(score_id=18, result_id=2, subject_code=5210, score=70, deviation_value=64.5),
-            SubjectScores(score_id=19, result_id=2, subject_code=6110, score=75, deviation_value=58.4),
-            SubjectScores(score_id=20, result_id=2, subject_code=7665, score=765, deviation_value=58.4),
-            
-            SubjectScores(score_id=21, result_id=2, subject_code=2270, score=95, deviation_value=72.5),
-            SubjectScores(score_id=22, result_id=3, subject_code=1710, score=80, deviation_value=69.6)
-        ]
-        db.session.add_all(subject_scores)
+        # --- SubjectScores（PKは自動採番） ---
+        def add_score(er, scode, score, dev):
+            ss = SubjectScores.query.filter_by(result_id=er.result_id, subject_code=scode).first()
+            if not ss:
+                ss = SubjectScores(result_id=er.result_id, subject_code=scode, score=score, deviation_value=dev)
+                db.session.add(ss)
+            else:
+                ss.score = score; ss.deviation_value = dev
 
-        # --- Departments ---
-        departments = [
-            Departments(department_id=100, faculty_id=22, department_name="東北　　　　　医　　　　医－前　　　"),
-            Departments(department_id=200, faculty_id=100, department_name="神戸　　　　　医　　　　医－前　　　"),
-            Departments(department_id=300, faculty_id=75, department_name="大阪　　　　　医　　　　放射線－前　")
-        ]
-        db.session.add_all(departments)
+        add_score(er_objs[(455387, ex_objs[(1, 2024, "共テ")].exam_id)], 1110, 82, 61.7)
+        add_score(er_objs[(455387, ex_objs[(1, 2024, "共テ")].exam_id)], 1520, 86, 67.9)
+        add_score(er_objs[(455387, ex_objs[(1, 2024, "共テ")].exam_id)], 2580, 157, 63.2)
 
-        # --- ExamJudgements ---
-        exam_judgements = [
-            ExamJudgements(judgement_id=1, result_id=1, preference_order=1, department_id=100, judgement="C"),
-            ExamJudgements(judgement_id=2, result_id=1, preference_order=2, department_id=200, judgement="B"),
-            ExamJudgements(judgement_id=3, result_id=1, preference_order=3, department_id=300, judgement="A"),
-            
-            ExamJudgements(judgement_id=4, result_id=2, preference_order=1, department_id=100, judgement="C"),
-            ExamJudgements(judgement_id=5, result_id=2, preference_order=2, department_id=200, judgement="B"),
-            ExamJudgements(judgement_id=6, result_id=2, preference_order=3, department_id=300, judgement="A")
-        ]
-        db.session.add_all(exam_judgements)
+        # --- Departments（PKは自動採番） ---
+        def get_dep(fid, name):
+            dep = Departments.query.filter_by(faculty_id=fid, department_name=name).first()
+            if not dep:
+                dep = Departments(faculty_id=fid, department_name=name)
+                db.session.add(dep); db.session.flush()
+            return dep
+        dep1 = get_dep(22, "東北　　　　　医　　　　医－前　　　")
+        dep2 = get_dep(100, "神戸　　　　　医　　　　医－前　　　")
+        dep3 = get_dep(75, "大阪　　　　　医　　　　放射線－前　")
+
+        # --- ExamJudgements（新カラムに対応） ---
+        def upsert_judgement(er, order, dep, sougou=None, kyote=None, niji=None):
+            j = ExamJudgements.query.filter_by(result_id=er.result_id, preference_order=order).first()
+            if not j:
+                j = ExamJudgements(result_id=er.result_id, preference_order=order, department_id=dep.department_id,
+                                   judgement_sougou=sougou, judgement_kyote=kyote, judgement_niji=niji)
+                db.session.add(j)
+            else:
+                j.department_id = dep.department_id
+                j.judgement_sougou = sougou
+                j.judgement_kyote = kyote
+                j.judgement_niji = niji
+
+        er1 = er_objs[(455387, ex_objs[(1, 2024, "共テ")].exam_id)]
+        er2 = er_objs[(455387, ex_objs[(2, 2024, "共テ")].exam_id)]
+        upsert_judgement(er1, 1, dep1, sougou="C")
+        upsert_judgement(er1, 2, dep2, sougou="B")
+        upsert_judgement(er1, 3, dep3, sougou="A")
+        upsert_judgement(er2, 1, dep1, sougou="C")
+        upsert_judgement(er2, 2, dep2, sougou="B")
+        upsert_judgement(er2, 3, dep3, sougou="A")
 
         db.session.commit()
 

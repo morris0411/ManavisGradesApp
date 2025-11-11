@@ -1,10 +1,13 @@
 // src/api/students.js
 import axiosClient from "./axiosClient";
 
-export const fetchStudents = async (keyword) => {
-  const res = await axiosClient.get("/students/search", {
-    params: { q: keyword }, // ← Flask側のパラメータ名に合わせる！
-  });
+export const fetchStudents = async (keyword, statuses) => {
+  const params = { q: keyword };
+  if (Array.isArray(statuses) && statuses.length > 0) {
+    // axios は配列を status=...&status=... として送る
+    params.status = statuses;
+  }
+  const res = await axiosClient.get("/students/search", { params });
   return res.data;
 };
 

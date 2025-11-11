@@ -11,7 +11,10 @@ students_bp = Blueprint("students", __name__)
 @students_bp.route("/students/search", methods=["GET"])
 def search_students_api():
     keyword = request.args.get("q", "")
-    results = search_students(keyword)
+    # 複数指定可能: /students/search?status=在籍&status=既卒
+    # axios の配列は status[]=... になる場合があるため双方対応
+    statuses = request.args.getlist("status") or request.args.getlist("status[]") or None
+    results = search_students(keyword, statuses)
     return jsonify(results)
 
 # ------------------------
