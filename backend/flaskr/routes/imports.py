@@ -38,6 +38,31 @@ def _read_students_csv(file: FileStorage) -> pd.DataFrame:
     return df
 
 
+def _debug_df(title: str, df: pd.DataFrame):
+    """開発用: DFの内容をターミナルに出力（先頭10行・列名・shape）"""
+    try:
+        print(f"\n=== {title} ===")
+        print(f"shape={df.shape}")
+        print(f"columns={list(df.columns)}")
+        # 先頭10行
+        with pd.option_context("display.max_columns", None, "display.width", 200):
+            print(df.head(10).to_string(index=False))
+        print("=== end ===\n")
+    except Exception as e:
+        print(f"[debug print failed] {title}: {e}")
+
+
+def _fix_seq(table: str, id_col: str):
+    """PostgreSQLのシーケンスがズレた際に、最大IDへ合わせる"""
+    try:
+        db.session.execute(text(
+            f"SELECT setval(pg_get_serial_sequence('{table}','{id_col}'), "
+            f"(SELECT COALESCE(MAX({id_col}),0) FROM {table}))"
+        ))
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+
 @imports_bp.route("/imports/students", methods=["POST"])
 def import_students():
     file = request.files.get("file")
@@ -133,30 +158,39 @@ def import_exams_xlsx():
         bio = io.BytesIO(raw)
         # すべて文字列で取り込む（欠損混在を吸収）
         df = pd.read_excel(bio, engine="openpyxl", dtype=str)
+        _debug_df("Exams XLSX (raw)", df)
 
         def _cleanup(s):
             if pd.isna(s) or s is None:
                 return ""
             return str(s).replace(" ", "").replace("　", "").strip()
 
-        # 校舎コード == 940 のみ
+        # 校舎コード == 940 のみ（数値化して比較: '940', 940, 940.0 すべてOK）
         if "校舎コード" not in df.columns:
             return jsonify({"error": "校舎コード 列が見つかりません"}), 400
-        df = df[df["校舎コード"].map(_cleanup) == "940"].copy()
+        import numpy as np
+        def _to_num(s):
+            try:
+                return int(float(str(s).strip()))
+            except Exception:
+                return np.nan
+        df = df[df["校舎コード"].map(_to_num) == 940].copy()
         if df.empty:
             return jsonify({"ok": True, "inserted": {}, "skipped_students": 0, "note": "対象行なし"})
+        _debug_df("Exams XLSX (after 校舎コード=940 filter)", df)
 
         # 大学名i の分割（1..9）
         for i in range(1, 10):
             col = f"大学名{i}"
             if col in df.columns:
                 def _split3(x):
-                    x = _cleanup(x)
-                    u = x[0:7]
-                    f = x[7:12]
-                    d = x[12:18]
+                    s = "" if pd.isna(x) else str(x)
+                    u = s[0:7]
+                    f = s[7:12]
+                    d = s[12:18]
                     return pd.Series([_cleanup(u), _cleanup(f), _cleanup(d)])
                 df[[f"大学名{i}", f"学部名{i}", f"募集区分名{i}"]] = df[col].apply(_split3)
+        _debug_df("Exams XLSX (after 大学/学部/募集区分 split)", df)
 
         # コード突合
         from ..models import Universities, Faculties, Exams, ExamMaster, ExamResults, SubjectMaster, SubjectScores, Departments, ExamJudgements
@@ -171,7 +205,18 @@ def import_exams_xlsx():
                 return code_cache_uni[name]
             u = Universities.query.filter(Universities.university_name == name).first()
             if not u:
-                return None
+                # 存在しなければ新規作成（都度マスタ更新）
+                try:
+                    u = Universities(university_name=name)
+                    db.session.add(u); db.session.flush()
+                except IntegrityError:
+                    # PKシーケンスのズレ等に備えて修正後に再試行
+                    db.session.rollback()
+                    _fix_seq('universities', 'university_id')
+                    u = Universities.query.filter(Universities.university_name == name).first()
+                    if not u:
+                        u = Universities(university_name=name)
+                        db.session.add(u); db.session.flush()
             code_cache_uni[name] = u.university_id
             return u.university_id
 
@@ -187,7 +232,21 @@ def import_exams_xlsx():
                 Faculties.faculty_name == name
             ).first()
             if not f:
-                return None
+                # 存在しなければ新規作成（都度マスタ更新）
+                try:
+                    f = Faculties(university_id=university_id, faculty_name=name)
+                    db.session.add(f); db.session.flush()
+                except IntegrityError:
+                    # PKシーケンスのズレ等に備えて修正後に再試行
+                    db.session.rollback()
+                    _fix_seq('faculties', 'faculty_id')
+                    f = Faculties.query.filter(
+                        Faculties.university_id == university_id,
+                        Faculties.faculty_name == name
+                    ).first()
+                    if not f:
+                        f = Faculties(university_id=university_id, faculty_name=name)
+                        db.session.add(f); db.session.flush()
             code_cache_fac[key] = f.faculty_id
             return f.faculty_id
 
@@ -200,9 +259,26 @@ def import_exams_xlsx():
             if fname_col in df.columns:
                 fcode_col = f"学部コード{i}"
                 def _map_fac(row):
-                    uid = row.get(f"大学コード{i}")
+                    # 大学IDは原則「大学名i」から決定。取れない場合のみ既存IDを検証して使用。
+                    uid = None
+                    if uname_col in row:
+                        uid = get_university_id_by_name(row.get(uname_col))
+                    if not uid:
+                        raw_uid = row.get(f"大学コード{i}")
+                        try:
+                            raw_uid_int = int(float(str(raw_uid).strip()))
+                        except Exception:
+                            raw_uid_int = None
+                        if raw_uid_int:
+                            # 既存Universitiesに存在するIDのみ採用（無ければNoneのまま）
+                            u = Universities.query.get(raw_uid_int)
+                            if u:
+                                uid = u.university_id
                     return get_faculty_id_by_name(uid, row.get(fname_col))
                 df[fcode_col] = df.apply(_map_fac, axis=1)
+        # コード付与後の抜粋をデバッグ出力（大学/学部コード関連のみ）
+        subset_cols = [c for c in df.columns if ("大学コード" in c or "学部コード" in c)]
+        _debug_df("Exams XLSX (after 大学/学部コード mapping)", df[subset_cols] if subset_cols else df)
 
         # 必須列の解決
         def find_col(candidates):
@@ -210,9 +286,9 @@ def import_exams_xlsx():
                 if c in df.columns:
                     return c
             return None
-        col_student = find_col(["マナビス生番号", "student_id"])
-        col_year = find_col(["年度", "exam_year"])
-        col_exam = find_col(["模試", "exam_code"])
+        col_student = find_col(["マナビス生番号", "学籍番号", "student_id"])
+        col_year = find_col(["年度", "年", "exam_year"])
+        col_exam = find_col(["模試", "模試コード", "exam_code"])
         if not (col_student and col_year and col_exam):
             return jsonify({"error": "必須列（マナビス生番号/年度/模試）が見つかりません"}), 400
 
@@ -236,72 +312,120 @@ def import_exams_xlsx():
 
         inserted = {"exams": 0, "exam_results": 0, "subject_scores": 0, "judgements": 0}
         skipped_students = 0
+        skipped_students_rows = []  # 取り込めなかった行の詳細（Students未登録）
+        skipped_parse_rows = []  # 年度/模試コードの数値化に失敗した行サンプル（先頭100件）
+ 
+        def _to_int(val):
+            try:
+                return int(float(str(val).strip()))
+            except Exception:
+                return None
 
-        for _, r in df.iterrows():
-            sid_str = _cleanup(r.get(col_student))
-            if not sid_str.isdigit():
+        for idx, r in df.iterrows():
+            # student_id 数値化（'123456.0' も許容）
+            sid_raw = r.get(col_student)
+            try:
+                sid = int(float(str(sid_raw).strip()))
+            except Exception:
                 continue
-            sid = int(sid_str)
             stu = Students.query.get(sid)
             if not stu:
                 skipped_students += 1
+                # 何がスキップされたか記録（先頭100件まで）
+                if len(skipped_students_rows) < 100:
+                    skipped_students_rows.append({
+                        "row_index": int(idx),
+                        "student_id_parsed": sid,
+                        "student_id_raw": sid_raw,
+                        "year_raw": r.get(col_year),
+                        "exam_code_raw": r.get(col_exam),
+                    })
                 continue
 
             # 年度・模試
-            year_raw = _cleanup(r.get(col_year))
-            exam_code_raw = _cleanup(r.get(col_exam))
-            try:
-                year = int(year_raw)
-                exam_code_val = int(exam_code_raw)
-            except Exception:
+            year_raw = r.get(col_year)
+            exam_code_raw = r.get(col_exam)
+            year = _to_int(year_raw)
+            exam_code_val = _to_int(exam_code_raw)
+            if year is None or exam_code_val is None:
+                if len(skipped_parse_rows) < 100:
+                    skipped_parse_rows.append({
+                        "row_index": int(idx),
+                        "student_id": sid,
+                        "year_raw": year_raw,
+                        "exam_code_raw": exam_code_raw
+                    })
                 continue
             etype = exam_type_of(exam_code_val)
 
-        # ExamMaster
+            # ExamMaster
             em = ExamMaster.query.get(exam_code_val)
             if not em:
                 em = ExamMaster(exam_code=exam_code_val, exam_name=str(exam_code_val))
                 db.session.add(em); db.session.flush()
 
-        # Exams（シーケンスずれに備えリトライ）
-        ex = Exams.query.filter_by(exam_code=exam_code_val, exam_year=year, exam_type=etype).first()
-        if not ex:
-            try:
-                ex = Exams(exam_code=exam_code_val, exam_year=year, exam_type=etype)
-                db.session.add(ex); db.session.flush()
-                inserted["exams"] += 1
-            except IntegrityError:
-                # PKシーケンスずれを修正して再試行
-                db.session.rollback()
+            # Exams（シーケンスずれに備えリトライ）
+            ex = Exams.query.filter_by(exam_code=exam_code_val, exam_year=year, exam_type=etype).first()
+            if not ex:
                 try:
-                    db.session.execute(text(
-                        "SELECT setval(pg_get_serial_sequence('exams','exam_id'), "
-                        "(SELECT COALESCE(MAX(exam_id),0) FROM exams))"
-                    ))
-                    db.session.commit()
-                except Exception:
-                    db.session.rollback()
-                ex = Exams.query.filter_by(exam_code=exam_code_val, exam_year=year, exam_type=etype).first()
-                if not ex:
                     ex = Exams(exam_code=exam_code_val, exam_year=year, exam_type=etype)
                     db.session.add(ex); db.session.flush()
                     inserted["exams"] += 1
+                except IntegrityError:
+                    # PKシーケンスずれを修正して再試行
+                    db.session.rollback()
+                    try:
+                        db.session.execute(text(
+                            "SELECT setval(pg_get_serial_sequence('exams','exam_id'), "
+                            "(SELECT COALESCE(MAX(exam_id),0) FROM exams))"
+                        ))
+                        db.session.commit()
+                    except Exception:
+                        db.session.rollback()
+                    ex = Exams.query.filter_by(exam_code=exam_code_val, exam_year=year, exam_type=etype).first()
+                    if not ex:
+                        ex = Exams(exam_code=exam_code_val, exam_year=year, exam_type=etype)
+                        db.session.add(ex); db.session.flush()
+                        inserted["exams"] += 1
 
-            # ExamResults
+            # ExamResults（シーケンスずれに備えリトライ）
             er = ExamResults.query.filter_by(student_id=sid, exam_id=ex.exam_id).first()
             if not er:
-                er = ExamResults(student_id=sid, exam_id=ex.exam_id)
-                db.session.add(er); db.session.flush()
-                inserted["exam_results"] += 1
+                try:
+                    er = ExamResults(student_id=sid, exam_id=ex.exam_id)
+                    db.session.add(er); db.session.flush()
+                    inserted["exam_results"] += 1
+                except IntegrityError:
+                    db.session.rollback()
+                    try:
+                        db.session.execute(text(
+                            "SELECT setval(pg_get_serial_sequence('exam_results','result_id'), "
+                            "(SELECT COALESCE(MAX(result_id),0) FROM exam_results))"
+                        ))
+                        db.session.commit()
+                    except Exception:
+                        db.session.rollback()
+                    er = ExamResults.query.filter_by(student_id=sid, exam_id=ex.exam_id).first()
+                    if not er:
+                        er = ExamResults(student_id=sid, exam_id=ex.exam_id)
+                        db.session.add(er); db.session.flush()
+                        inserted["exam_results"] += 1
 
-            # 科目スコア 01..26
+            # 科目スコア 01..26（01/1 両対応）
             for n in range(1, 27):
-                nn = f"{n:02d}"
-                scode_col = f"科{nn}"
-                score_col = f"得{nn}"
-                dev_col = f"偏{nn}"
-                if scode_col not in df.columns:
+                nn2 = f"{n:02d}"
+                nn1 = f"{n}"
+                def pick(cols):
+                    for c in cols:
+                        if c in df.columns:
+                            return c
+                    return None
+                scode_col = pick([f"科{nn2}", f"科{nn1}"])
+                if not scode_col:
                     continue
+                score_col = pick([f"得{nn2}", f"得{nn1}"])
+                dev_col = pick([f"偏{nn2}", f"偏{nn1}"])
+
                 scode_str = _cleanup(r.get(scode_col))
                 if not scode_str.isdigit():
                     continue
@@ -331,33 +455,35 @@ def import_exams_xlsx():
                     ss.score = score_val
                     ss.deviation_value = dev_val
 
-            # 志望 1..9
+            # 志望 1..9（大学/学部/募集区分 か 評価のいずれかがあれば登録）
             for i in range(1, 10):
-                ucode = r.get(f"大学コード{i}")
-                fcode = r.get(f"学部コード{i}")
+                uname = _cleanup(r.get(f"大学名{i}")) if f"大学名{i}" in df.columns else ""
+                fname = _cleanup(r.get(f"学部名{i}")) if f"学部名{i}" in df.columns else ""
                 dname = _cleanup(r.get(f"募集区分名{i}")) if f"募集区分名{i}" in df.columns else ""
-                if (ucode is None and fcode is None and not dname):
-                    continue
-                try:
-                    ucode_val = int(_cleanup(ucode)) if ucode not in [None, ""] else None
-                except Exception:
-                    ucode_val = None
-                try:
-                    fcode_val = int(_cleanup(fcode)) if fcode not in [None, ""] else None
-                except Exception:
-                    fcode_val = None
-
-                dep_id = None
-                if fcode_val:
-                    dep = Departments.query.filter_by(faculty_id=fcode_val, department_name=dname or "").first()
-                    if not dep:
-                        dep = Departments(faculty_id=fcode_val, department_name=dname or "")
-                        db.session.add(dep); db.session.flush()
-                    dep_id = dep.department_id
-
                 kyote = _cleanup(r.get(f"評テ{i}")) if f"評テ{i}" in df.columns else ""
                 niji = _cleanup(r.get(f"評二{i}")) if f"評二{i}" in df.columns else ""
                 sougou = _cleanup(r.get(f"評総{i}")) if f"評総{i}" in df.columns else ""
+
+                # 大学/学部/募集区分 も 評価も すべて空ならスキップ
+                if (not uname and not fname and not dname) and (not kyote and not niji and not sougou):
+                    continue
+
+                # 大学・学部は名称基準で作成/取得（コード列が無い前提）
+                uid = get_university_id_by_name(uname) if uname else None
+                fid = None
+                if uid:
+                    if fname:
+                        fid = get_faculty_id_by_name(uid, fname)
+                    if fid is None:
+                        fid = get_faculty_id_by_name(uid, "未設定")
+
+                dep_id = None
+                if fid:
+                    dep = Departments.query.filter_by(faculty_id=fid, department_name=dname or "未設定").first()
+                    if not dep:
+                        dep = Departments(faculty_id=fid, department_name=dname or "未設定")
+                        db.session.add(dep); db.session.flush()
+                    dep_id = dep.department_id
 
                 j = ExamJudgements.query.filter_by(result_id=er.result_id, preference_order=i).first()
                 if not j:
@@ -372,7 +498,18 @@ def import_exams_xlsx():
                     j.judgement_sougou = sougou or None
 
         db.session.commit()
-        return jsonify({"ok": True, "inserted": inserted, "skipped_students": skipped_students})
+        # スキップ詳細をログにも出力
+        if skipped_students_rows:
+            _debug_df("Exams XLSX (skipped students sample)", pd.DataFrame(skipped_students_rows))
+        if skipped_parse_rows:
+            _debug_df("Exams XLSX (skipped parse sample: year/exam_code)", pd.DataFrame(skipped_parse_rows))
+        return jsonify({
+            "ok": True,
+            "inserted": inserted,
+            "skipped_students": skipped_students,
+            "skipped_students_rows": skipped_students_rows,
+            "skipped_parse_rows": skipped_parse_rows
+        })
     except ValueError as e:
         db.session.rollback()
         return jsonify({"error": str(e)}), 400

@@ -4,6 +4,7 @@ from ..models import (
 )
 from .. import db
 from sqlalchemy.orm import joinedload
+from sqlalchemy import or_
 
 def list_years():
     rows = (
@@ -71,16 +72,18 @@ def get_exam_results(exam_id):
             Students.name,
             Students.school_name,
             ExamJudgements.preference_order,
-            ExamJudgements.judgement,
+            ExamJudgements.judgement_kyote,
+            ExamJudgements.judgement_niji,
+            ExamJudgements.judgement_sougou,
             Departments.department_name,
             Faculties.faculty_name,
             Universities.university_name
         )
         .join(ExamResults, ExamResults.student_id == Students.student_id)
         .join(ExamJudgements, ExamJudgements.result_id == ExamResults.result_id)
-        .join(Departments, Departments.department_id == ExamJudgements.department_id)
-        .join(Faculties, Faculties.faculty_id == Departments.faculty_id)
-        .join(Universities, Universities.university_id == Faculties.university_id)
+        .outerjoin(Departments, Departments.department_id == ExamJudgements.department_id)
+        .outerjoin(Faculties, Faculties.faculty_id == Departments.faculty_id)
+        .outerjoin(Universities, Universities.university_id == Faculties.university_id)
         .filter(ExamResults.exam_id == exam_id)
         .order_by(Students.student_id, ExamJudgements.preference_order)
         .all()
@@ -94,16 +97,18 @@ def filter_exam_results(exam_id, name=None, university=None, faculty=None, order
             Students.name,
             Students.school_name,
             ExamJudgements.preference_order,
-            ExamJudgements.judgement,
+            ExamJudgements.judgement_kyote,
+            ExamJudgements.judgement_niji,
+            ExamJudgements.judgement_sougou,
             Departments.department_name,
             Faculties.faculty_name,
             Universities.university_name
         )
         .join(ExamResults, ExamResults.student_id == Students.student_id)
         .join(ExamJudgements, ExamJudgements.result_id == ExamResults.result_id)
-        .join(Departments, Departments.department_id == ExamJudgements.department_id)
-        .join(Faculties, Faculties.faculty_id == Departments.faculty_id)
-        .join(Universities, Universities.university_id == Faculties.university_id)
+        .outerjoin(Departments, Departments.department_id == ExamJudgements.department_id)
+        .outerjoin(Faculties, Faculties.faculty_id == Departments.faculty_id)
+        .outerjoin(Universities, Universities.university_id == Faculties.university_id)
         .filter(ExamResults.exam_id == exam_id)
     )
 
@@ -133,9 +138,17 @@ def _format_exam_results(rows):
                 "志望": {i: "" for i in range(1, 6)}
             }
 
-        grouped[sid]["志望"][r.preference_order] = (
-            f"{r.university_name} {r.faculty_name} {r.department_name.strip()} ({r.judgement})"
-        )
+        uni = (r.university_name or "").strip()
+        fac = (r.faculty_name or "").strip()
+        dep = (r.department_name or "").strip()
+        jk = (r.judgement_kyote or "").strip()
+        jn = (r.judgement_niji or "").strip()
+        js = (r.judgement_sougou or "").strip()
+        # 判定は存在するものだけ括弧内に並べる
+        judgements = " / ".join([x for x in [jk, jn, js] if x])
+        judgements_part = f" ({judgements})" if judgements else ""
+        name_part = " ".join([x for x in [uni, fac, dep] if x]).strip()
+        grouped[sid]["志望"][r.preference_order] = f"{name_part}{judgements_part}"
 
     result = []
     for s in grouped.values():
