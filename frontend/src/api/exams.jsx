@@ -27,9 +27,14 @@ export const fetchExamResults = async (examId) => {
   return res.data;
 };
 
-export const filterExamResults = async ({ exam_id, name, university, faculty, order_min, order_max }) => {
+export const fetchTopUniversities = async () => {
+  const res = await axiosClient.get("/exams/universities/top");
+  return res.data;
+};
+
+export const filterExamResults = async ({ exam_id, name, university, university_id, faculty, order_min, order_max, include_top_universities }) => {
   const res = await axiosClient.get("/exams/filter", {
-    params: { exam_id, name, university, faculty, order_min, order_max },
+    params: { exam_id, name, university, university_id, faculty, order_min, order_max, include_top_universities },
   });
   return res.data;
 };

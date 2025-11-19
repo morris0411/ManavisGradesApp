@@ -1,19 +1,23 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { useParams, Link } from "react-router-dom";
-import { fetchExamResults, filterExamResults } from "../../api/exams";
-import "./Detail.css";
+import { fetchExamResults, filterExamResults, searchExams, fetchTopUniversities } from "../../api/exams";
+import { Breadcrumb } from "../../components/Breadcrumb";
 
 const ExamsDetail = () => {
   const { examId } = useParams();
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [examName, setExamName] = useState("");
+  const [examYear, setExamYear] = useState("");
 
   const [name, setName] = useState("");
   const [university, setUniversity] = useState("");
+  const [universityId, setUniversityId] = useState("");
   const [faculty, setFaculty] = useState("");
-  const [orderMin, setOrderMin] = useState("");
-  const [orderMax, setOrderMax] = useState("");
+  const [orderMin, setOrderMin] = useState("1");
+  const [orderMax, setOrderMax] = useState("1");
+  const [topUniversities, setTopUniversities] = useState([]);
 
   const load = async () => {
     try {
@@ -35,16 +39,50 @@ const ExamsDetail = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [examId]);
 
+  useEffect(() => {
+    // 模試名と年度を取得
+    const fetchExamInfo = async () => {
+      try {
+        const exams = await searchExams({});
+        const exam = exams.find((e) => e.exam_id === Number(examId));
+        if (exam) {
+          setExamName(exam.exam_name);
+          setExamYear(exam.exam_year || "");
+        }
+      } catch (e) {
+        console.error("模試情報の取得に失敗しました", e);
+      }
+    };
+    fetchExamInfo();
+  }, [examId]);
+
+  useEffect(() => {
+    // 難関10大学の一覧を取得
+    const fetchUniversities = async () => {
+      try {
+        const universities = await fetchTopUniversities();
+        setTopUniversities(universities || []);
+      } catch (e) {
+        console.error("大学一覧の取得に失敗しました", e);
+      }
+    };
+    fetchUniversities();
+  }, []);
+
   const doFilter = async () => {
     setLoading(true);
     try {
+      const includeTopUniversities = universityId === "ALL";
+      const normalizedUniversityId = includeTopUniversities ? "" : universityId;
       const data = await filterExamResults({
         exam_id: examId,
         name: name || undefined,
-        university: university || undefined,
+        university: (includeTopUniversities || normalizedUniversityId) ? undefined : (university || undefined), // �v���_�E���I�����̓e�L�X�g���͂𖳎�
+        university_id: normalizedUniversityId || undefined,
         faculty: faculty || undefined,
         order_min: orderMin || undefined,
         order_max: orderMax || undefined,
+        include_top_universities: includeTopUniversities || undefined,
       });
       const list = Array.isArray(data) ? data : [];
       setRows(list);
@@ -53,72 +91,428 @@ const ExamsDetail = () => {
     }
   };
 
+  const handleUniversitySelectChange = (value) => {
+    setUniversityId(value);
+    // プルダウン選択時はテキスト入力をクリア
+    if (value) {
+      setUniversity("");
+    }
+  };
+
+  const handleUniversityInputChange = (value) => {
+    setUniversity(value);
+    // テキスト入力時はプルダウン選択をクリア
+    if (value) {
+      setUniversityId("");
+    }
+  };
+
+  const handleResetFilters = () => {
+    setName("");
+    setUniversity("");
+    setUniversityId("");
+    setFaculty("");
+    setOrderMin("1");
+    setOrderMax("1");
+  };
+
+  // 志望順位の列を動的に取得
+  const preferenceColumns = useMemo(() => {
+    const columns = new Set();
+    rows.forEach((row) => {
+      Object.keys(row).forEach((key) => {
+        if (key.startsWith("第") && key.endsWith("志望")) {
+          columns.add(key);
+        }
+      });
+    });
+    // 数値順にソート（第1志望、第2志望...の順）
+    return Array.from(columns).sort((a, b) => {
+      const numA = parseInt(a.match(/\d+/)?.[0] || "0");
+      const numB = parseInt(b.match(/\d+/)?.[0] || "0");
+      return numA - numB;
+    });
+  }, [rows]);
+
+  const examTitle = examYear ? `${examYear}年 ${examName || "模試詳細"}` : (examName || "模試詳細");
+
   return (
-    <div className="search-container">
-      <h2>模試詳細</h2>
-      <div className="detail-back">
-        <Link to="/exams/search">← 模試検索に戻る</Link>
+    <div className="min-h-screen" style={{ backgroundColor: "#f8fafb" }}>
+      {/* Header */}
+      <div className="border-b" style={{ borderColor: "#e5eef3", backgroundColor: "#ffffff" }}>
+        <div className="max-w-6xl mx-auto px-6 py-4">
+          <Breadcrumb items={[
+            { label: "ホーム", path: "/" },
+            { label: "模試から検索", path: "/exams/search" },
+            { label: examTitle }
+          ]} />
+        </div>
       </div>
 
-      <div className="detail-filters">
-        <div>
-          <label>氏名</label><br />
-          <input value={name} onChange={(e) => setName(e.target.value)} />
+      {/* Main Content */}
+      <div className="max-w-6xl mx-auto px-6 py-8">
+        {/* Title Section */}
+        <div className="mb-8">
+          <div className="flex items-baseline gap-3">
+            <h1 
+              className="text-3xl font-bold"
+              style={{ 
+                background: "linear-gradient(135deg, #1BA4C3 0%, #0086A9 50%, #006580 100%)",
+                WebkitBackgroundClip: "text",
+                WebkitTextFillColor: "transparent",
+                backgroundClip: "text"
+              }}
+            >
+              {examTitle}
+            </h1>
+            <p className="text-sm" style={{ color: "#666e7e" }}>
+              を受験した者の判定結果を表示します。
+            </p>
+          </div>
         </div>
-        <div>
-          <label>大学</label><br />
-          <input value={university} onChange={(e) => setUniversity(e.target.value)} />
-        </div>
-        <div>
-          <label>学部</label><br />
-          <input value={faculty} onChange={(e) => setFaculty(e.target.value)} />
-        </div>
-        <div>
-          <label>第志望(最小)</label><br />
-          <input type="number" value={orderMin} onChange={(e) => setOrderMin(e.target.value)} min="1" />
-        </div>
-        <div>
-          <label>第志望(最大)</label><br />
-          <input type="number" value={orderMax} onChange={(e) => setOrderMax(e.target.value)} min="1" />
-        </div>
-        <button onClick={doFilter}>フィルター</button>
-        <button onClick={load}>リセット</button>
-      </div>
 
-      {loading ? (
-        <div>読み込み中...</div>
-      ) : error ? (
-        <div>{error}</div>
-      ) : (
-        <table className="detail-table">
-          <thead>
-            <tr>
-              <th>生徒ID</th>
-              <th>氏名</th>
-              <th>学校名</th>
-              <th>第1志望</th>
-              <th>第2志望</th>
-              <th>第3志望</th>
-              <th>第4志望</th>
-              <th>第5志望</th>
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((r) => (
-              <tr key={r.student_id}>
-                <td>{r.student_id}</td>
-                <td>{r.name}</td>
-                <td>{r.school_name}</td>
-                <td>{r["第1志望"]}</td>
-                <td>{r["第2志望"]}</td>
-                <td>{r["第3志望"]}</td>
-                <td>{r["第4志望"]}</td>
-                <td>{r["第5志望"]}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      )}
+        {/* Filter Card */}
+        <div 
+          className="rounded-lg p-6 mb-8" 
+          style={{ 
+            backgroundColor: "#ffffff", 
+            boxShadow: "0 1px 3px rgba(0, 101, 128, 0.08)" 
+          }}
+        >
+          <div className="flex gap-4 items-start flex-wrap">
+            <div className="flex-1 min-w-[150px]">
+              <label 
+                className="block mb-2 text-sm font-medium"
+                style={{ color: "#006580" }}
+              >
+                氏名
+              </label>
+              <input 
+                value={name} 
+                onChange={(e) => setName(e.target.value)} 
+                placeholder="氏名を入力"
+                className="w-full px-4 py-2.5 rounded-md text-sm border transition"
+                style={{
+                  borderColor: "#d0dce5",
+                  backgroundColor: "#ffffff",
+                  color: "#333"
+                }}
+              />
+            </div>
+            <div className="flex-1 min-w-[150px]">
+              <label 
+                className="block mb-2 text-sm font-medium"
+                style={{ color: "#006580" }}
+              >
+                大学
+              </label>
+              <div className="flex flex-col gap-2">
+                <input 
+                  value={university} 
+                  onChange={(e) => handleUniversityInputChange(e.target.value)}
+                  placeholder="大学名を入力"
+                  className="w-full px-4 py-2.5 rounded-md text-sm border transition"
+                  style={{
+                    borderColor: "#d0dce5",
+                    backgroundColor: "#ffffff",
+                    color: "#333"
+                  }}
+                />
+                <select
+                  value={universityId}
+                  onChange={(e) => handleUniversitySelectChange(e.target.value)}
+                  className="w-full px-4 py-2.5 rounded-md text-sm border transition"
+                  style={{
+                    borderColor: "#d0dce5",
+                    backgroundColor: "#ffffff",
+                    color: "#333"
+                  }}
+                >
+                  <option value="" disabled hidden>難関10大学から選択</option>
+                  <option value="ALL">すべて</option>
+                  {topUniversities.map((uni) => (
+                    <option key={uni.university_id} value={uni.university_id}>
+                      {uni.university_name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+            <div className="flex-1 min-w-[150px]">
+              <label 
+                className="block mb-2 text-sm font-medium"
+                style={{ color: "#006580" }}
+              >
+                学部
+              </label>
+              <input 
+                value={faculty} 
+                onChange={(e) => setFaculty(e.target.value)} 
+                placeholder="学部名を入力"
+                className="w-full px-4 py-2.5 rounded-md text-sm border transition"
+                style={{
+                  borderColor: "#d0dce5",
+                  backgroundColor: "#ffffff",
+                  color: "#333"
+                }}
+              />
+            </div>
+            <div className="min-w-[120px]">
+              <label 
+                className="block mb-2 text-sm font-medium"
+                style={{ color: "#006580" }}
+              >
+                志望順位(最小)
+              </label>
+              <select
+                value={orderMin}
+                onChange={(e) => setOrderMin(e.target.value)}
+                className="w-full px-4 py-2.5 rounded-md text-sm border"
+                style={{
+                  borderColor: "#d0dce5",
+                  backgroundColor: "#ffffff",
+                  color: "#333"
+                }}
+              >
+                {Array.from({ length: 9 }, (_, i) => i + 1).map((n) => (
+                  <option key={n} value={n}>
+                    {n}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="min-w-[120px]">
+              <label 
+                className="block mb-2 text-sm font-medium"
+                style={{ color: "#006580" }}
+              >
+                志望順位(最大)
+              </label>
+              <select
+                value={orderMax}
+                onChange={(e) => setOrderMax(e.target.value)}
+                className="w-full px-4 py-2.5 rounded-md text-sm border"
+                style={{
+                  borderColor: "#d0dce5",
+                  backgroundColor: "#ffffff",
+                  color: "#333"
+                }}
+              >
+                {Array.from({ length: 9 }, (_, i) => i + 1).map((n) => (
+                  <option key={n} value={n}>
+                    {n}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="flex gap-3 self-end">
+              <button 
+                onClick={doFilter} 
+                className="px-6 py-2.5 rounded-md font-medium text-white text-sm transition hover:shadow-lg"
+                style={{
+                  backgroundColor: "#1BA4C3"
+                }}
+                onMouseEnter={(e) => e.target.style.backgroundColor = "#0086A9"}
+                onMouseLeave={(e) => e.target.style.backgroundColor = "#1BA4C3"}
+              >
+                検索
+              </button>
+              <button 
+                onClick={handleResetFilters} 
+                className="px-5 py-2.5 rounded-md font-medium text-white text-sm transition hover:shadow-lg"
+                style={{
+                  backgroundColor: "#666e7e"
+                }}
+                onMouseEnter={(e) => e.target.style.backgroundColor = "#555"}
+                onMouseLeave={(e) => e.target.style.backgroundColor = "#666e7e"}
+              >
+                リセット
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Results Section */}
+        {loading ? (
+          <div 
+            className="rounded-lg p-12 text-center"
+            style={{ 
+              backgroundColor: "#ffffff", 
+              boxShadow: "0 1px 3px rgba(0, 101, 128, 0.08)" 
+            }}
+          >
+            <p className="text-sm" style={{ color: "#666e7e" }}>読み込み中...</p>
+          </div>
+        ) : error ? (
+          <div 
+            className="rounded-lg p-12 text-center"
+            style={{ 
+              backgroundColor: "#ffffff", 
+              boxShadow: "0 1px 3px rgba(0, 101, 128, 0.08)" 
+            }}
+          >
+            <p className="text-sm" style={{ color: "#b85a5a" }}>{error}</p>
+          </div>
+        ) : rows.length > 0 ? (
+          <div 
+            className="rounded-lg overflow-hidden" 
+            style={{ 
+              backgroundColor: "#ffffff", 
+              boxShadow: "0 1px 3px rgba(0, 101, 128, 0.08)" 
+            }}
+          >
+            <div 
+              className="px-6 py-4" 
+              style={{ 
+                backgroundColor: "#006580", 
+                borderBottom: "1px solid #e5eef3" 
+              }}
+            >
+              <p className="text-sm font-medium text-white">
+                検索結果 {rows.length}件
+              </p>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr style={{ 
+                    backgroundColor: "#f0f5f9", 
+                    borderBottom: "2px solid #d0dce5" 
+                  }}>
+                    <th 
+                      className="px-6 py-3 text-left text-xs font-semibold"
+                      style={{ 
+                        color: "#006580",
+                        writingMode: "horizontal-tb",
+                        textOrientation: "mixed",
+                        whiteSpace: "nowrap"
+                      }}
+                    >
+                      マナビス生番号
+                    </th>
+                    <th 
+                      className="px-6 py-3 text-left text-xs font-semibold"
+                      style={{ 
+                        color: "#006580",
+                        writingMode: "horizontal-tb",
+                        textOrientation: "mixed",
+                        whiteSpace: "nowrap"
+                      }}
+                    >
+                      氏名
+                    </th>
+                    <th 
+                      className="px-6 py-3 text-left text-xs font-semibold"
+                      style={{ 
+                        color: "#006580",
+                        writingMode: "horizontal-tb",
+                        textOrientation: "mixed",
+                        whiteSpace: "nowrap"
+                      }}
+                    >
+                      学校名
+                    </th>
+                    {preferenceColumns.map((col) => (
+                      <th 
+                        key={col}
+                        className="px-6 py-3 text-left text-xs font-semibold"
+                        style={{ 
+                          color: "#006580",
+                          writingMode: "horizontal-tb",
+                          textOrientation: "mixed",
+                          whiteSpace: "nowrap"
+                        }}
+                      >
+                        {col}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {rows.map((r, idx) => (
+                    <tr
+                      key={r.student_id}
+                      style={{
+                        backgroundColor: idx % 2 === 0 ? "#ffffff" : "#f8fafb",
+                        borderBottom: "1px solid #e5eef3"
+                      }}
+                      className="hover:bg-blue-50 transition"
+                    >
+                      <td 
+                        className="px-6 py-4 text-sm"
+                        style={{ 
+                          color: "#333",
+                          writingMode: "horizontal-tb",
+                          textOrientation: "mixed",
+                          whiteSpace: "nowrap"
+                        }}
+                      >
+                        {r.student_id}
+                      </td>
+                      <td 
+                        className="px-6 py-4 text-sm"
+                        style={{
+                          writingMode: "horizontal-tb",
+                          textOrientation: "mixed",
+                          whiteSpace: "nowrap"
+                        }}
+                      >
+                        <Link
+                          to={`/students/${r.student_id}`}
+                          className="font-medium transition hover:underline"
+                          style={{ color: "#1BA4C3" }}
+                          onMouseEnter={(e) => e.target.style.color = "#0086A9"}
+                          onMouseLeave={(e) => e.target.style.color = "#1BA4C3"}
+                        >
+                          {r.name}
+                        </Link>
+                      </td>
+                      <td 
+                        className="px-6 py-4 text-sm"
+                        style={{ 
+                          color: "#666e7e",
+                          writingMode: "horizontal-tb",
+                          textOrientation: "mixed",
+                          whiteSpace: "nowrap"
+                        }}
+                      >
+                        {r.school_name}
+                      </td>
+                      {preferenceColumns.map((col) => (
+                        <td 
+                          key={col}
+                          className="px-6 py-4 text-sm"
+                          style={{ 
+                            color: "#333",
+                            writingMode: "horizontal-tb",
+                            textOrientation: "mixed",
+                            whiteSpace: "nowrap"
+                          }}
+                        >
+                          {r[col] || "-"}
+                        </td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        ) : (
+          <div 
+            className="rounded-lg p-12 text-center"
+            style={{ 
+              backgroundColor: "#ffffff", 
+              boxShadow: "0 1px 3px rgba(0, 101, 128, 0.08)" 
+            }}
+          >
+            <p className="text-sm" style={{ color: "#666e7e" }}>
+              データがありません
+            </p>
+          </div>
+        )}
+      </div>
     </div>
   );
 };

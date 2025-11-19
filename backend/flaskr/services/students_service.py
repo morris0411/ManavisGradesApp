@@ -2,9 +2,9 @@
 from ..models import (
     Students, Exams, ExamResults, ExamJudgements,
     Departments, Faculties, Universities,
-    SubjectScores, SubjectMaster
+    SubjectScores, SubjectMaster, ExamMaster
 )
-from sqlalchemy import or_
+from sqlalchemy import or_, asc
 from .. import db
 
 
@@ -60,15 +60,16 @@ def get_student_detail(student_id):
 
     # 生徒の模試結果一覧
     exam_results = (
-        db.session.query(ExamResults, Exams)
+        db.session.query(ExamResults, Exams, ExamMaster)
         .join(Exams, Exams.exam_id == ExamResults.exam_id)
+        .join(ExamMaster, ExamMaster.exam_code == Exams.exam_code)
         .filter(ExamResults.student_id == student_id)
-        .order_by(Exams.exam_year)
+        .order_by(asc(Exams.exam_year), asc(ExamMaster.sort_key), asc(Exams.exam_id))
         .all()
     )
 
     exam_details = []
-    for er, ex in exam_results:
+    for er, ex, em in exam_results:
         # --- 志望校・判定情報 ---
         judgements = (
             db.session.query(ExamJudgements, Departments, Faculties, Universities)
@@ -88,7 +89,7 @@ def get_student_detail(student_id):
         )
 
         exam_details.append({
-            "exam_name": ex.exam_master.exam_name if ex.exam_master else None,
+            "exam_name": em.exam_name if em else None,
             "exam_year": ex.exam_year,
             "exam_type": ex.exam_type,
             "judgements": [
@@ -97,12 +98,16 @@ def get_student_detail(student_id):
                     "faculty_name": f.faculty_name,
                     "department_name": d.department_name,
                     "preference_order": j.preference_order,
-                    "judgement": (j.judgement_sougou or j.judgement_kyote or j.judgement_niji)
+                    "judgement": (j.judgement_sougou or j.judgement_kyote or j.judgement_niji),
+                    "judgement_kyote": j.judgement_kyote,
+                    "judgement_niji": j.judgement_niji,
+                    "judgement_sougou": j.judgement_sougou
                 }
                 for j, d, f, u in judgements
             ],
             "scores": [
                 {
+                    "subject_code": s.subject_code,
                     "subject_name": s.subject_name,
                     "score": sc.score,
                     "deviation_value": float(sc.deviation_value)
@@ -117,5 +122,7 @@ def get_student_detail(student_id):
         "name_kana": student.name_kana,
         "school_name": student.school_name,
         "grade": student.grade,
+        "status": student.status,
+        "admission_date": student.admission_date,
         "exams": exam_details
     }

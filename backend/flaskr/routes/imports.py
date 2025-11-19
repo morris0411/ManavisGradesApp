@@ -10,6 +10,25 @@ import datetime as dt
 
 imports_bp = Blueprint("imports", __name__)
 
+# 開催順（sort_key）の初期値マップ（exam_code -> sort_key）
+# seed_exam_master で使っている並び順に概ね対応
+ORDER_BY_CODE = {
+    # 高1
+    71: 1, 72: 2, 73: 3, 74: 4,
+    # 高2
+    61: 5, 62: 6, 63: 7, 65: 8, 66: 9,
+    # 高3（共通・記述）
+    1: 10, 5: 11, 2: 12, 6: 13,
+    # 大学別（第1回）
+    12: 14, 15: 15, 18: 16, 31: 17,
+    # 高3（第3回）
+    7: 18, 3: 19,
+    # 大学別（第2回/他）
+    13: 20, 16: 21, 41: 22, 42: 23, 22: 24, 21: 25, 19: 26, 24: 27, 25: 28, 27: 29,
+    # プレ（最後）
+    4: 30,
+}
+
 
 def _read_students_csv(file: FileStorage) -> pd.DataFrame:
     raw = file.read()
@@ -294,7 +313,8 @@ def import_exams_xlsx():
 
         # exam_type 判定
         kyote_codes = {1, 2, 3, 4, 38, 66}
-        kijutsu_codes = {5, 6, 7, 61, 62, 63, 65, 71, 72, 73, 74}
+        kou1kou2_codes = {61, 62, 63, 71, 72, 73, 74}  # 高1/高2模試
+        kijutsu_codes = {5, 6, 7, 65}  # 記述模試（高1/高2を除く）
         op_codes = {12, 13, 15, 16, 18, 19, 21, 22, 24, 25, 27, 31, 41, 42}
 
         def exam_type_of(code):
@@ -304,6 +324,8 @@ def import_exams_xlsx():
                 return "不明"
             if c in kyote_codes:
                 return "共テ"
+            if c in kou1kou2_codes:
+                return "高1/高2"
             if c in kijutsu_codes:
                 return "記述"
             if c in op_codes:
@@ -361,8 +383,15 @@ def import_exams_xlsx():
             # ExamMaster
             em = ExamMaster.query.get(exam_code_val)
             if not em:
-                em = ExamMaster(exam_code=exam_code_val, exam_name=str(exam_code_val))
+                em = ExamMaster(
+                    exam_code=exam_code_val,
+                    exam_name=str(exam_code_val),
+                    sort_key=ORDER_BY_CODE.get(exam_code_val)
+                )
                 db.session.add(em); db.session.flush()
+            else:
+                if em.sort_key is None:
+                    em.sort_key = ORDER_BY_CODE.get(exam_code_val)
 
             # Exams（シーケンスずれに備えリトライ）
             ex = Exams.query.filter_by(exam_code=exam_code_val, exam_year=year, exam_type=etype).first()

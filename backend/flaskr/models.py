@@ -19,6 +19,8 @@ class ExamMaster(db.Model):
 
     exam_code = db.Column(db.Integer, primary_key=True)
     exam_name = db.Column(db.String, nullable=False, unique=True)
+    # 開催順（同一カテゴリ/学年内での標準順序）
+    sort_key = db.Column(db.Integer, nullable=True)
 
 
 class Exams(db.Model):
