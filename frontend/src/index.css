@@ -132,7 +132,7 @@
   button {
     font-family: inherit;
     @apply rounded-lg border border-transparent px-5 py-2.5 text-base font-medium cursor-pointer transition-colors;
-    @apply bg-slate-900 text-white hover:border-blue-500;
+    @apply bg-slate-900 text-white;
     @apply focus:outline-none focus-visible:outline-4 focus-visible:outline-blue-500;
   }
   @media (prefers-color-scheme: light) {

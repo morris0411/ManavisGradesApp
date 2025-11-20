@@ -18,4 +18,14 @@ export const uploadExamsXlsx = async (file) => {
   return res.data;
 };
 
+export const getAcademicYearStatus = async () => {
+  const res = await axiosClient.get("/imports/academic_year_status");
+  return res.data;
+};
+
+export const updateAcademicYear = async () => {
+  const res = await axiosClient.post("/imports/update_academic_year");
+  return res.data;
+};
+
 

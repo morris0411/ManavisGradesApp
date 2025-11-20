@@ -3,7 +3,7 @@
 import React, { useMemo, useState } from "react"
 import { normalizeSubjectName } from "../utils/subject-utils"
 import { collectSubjectsWithCode, createSubjectCodeMap, getDefaultCheckedSubjects } from "../utils/exam-data-utils"
-import { ExamChart } from "./shared/exam-chart"
+import { ExamChartWithTabs } from "./shared/exam-chart"
 import { ExamTables } from "./shared/exam-tables"
 
 type High1High2TestTabProps = { exams?: Array<any> }
@@ -19,18 +19,25 @@ export function High1High2TestTab(props: High1High2TestTabProps) {
     return collectSubjectsWithCode(high1High2Exams)
   }, [high1High2Exams])
 
+  // 非表示にする科目コード
+  const hiddenSubjectCodes = new Set([2580, 2920, 2930, 3120, 3220, 3320, 3210, 3110])
+
   const presentSubjects = useMemo(() => {
-    return presentSubjectsWithCode.map(s => s.name)
+    return presentSubjectsWithCode
+      .filter(s => !hiddenSubjectCodes.has(s.code))
+      .map(s => s.name)
   }, [presentSubjectsWithCode])
 
-  // 科目名から科目コードへのマップ（presentSubjectsWithCodeから作成）
+  // 科目名から科目コードへのマップ（フィルタリング後の科目のみ）
   const subjectCodeMapFromPresent = useMemo(() => {
-    return createSubjectCodeMap(presentSubjectsWithCode)
+    const filtered = presentSubjectsWithCode.filter(s => !hiddenSubjectCodes.has(s.code))
+    return createSubjectCodeMap(filtered)
   }, [presentSubjectsWithCode])
 
   // チェックボックスの状態管理（デフォルトで1000の位が7の科目のみチェック）
   const [checkedSubjects, setCheckedSubjects] = useState<Set<string>>(() => {
-    return getDefaultCheckedSubjects(presentSubjectsWithCode)
+    const filtered = presentSubjectsWithCode.filter(s => !hiddenSubjectCodes.has(s.code))
+    return getDefaultCheckedSubjects(filtered)
   })
 
   // チェックされた科目のみ
@@ -38,7 +45,8 @@ export function High1High2TestTab(props: High1High2TestTabProps) {
     return presentSubjects.filter(subj => checkedSubjects.has(subj))
   }, [presentSubjects, checkedSubjects])
 
-  const chartData = useMemo(() => {
+  // 偏差値推移用のデータ
+  const deviationChartData = useMemo(() => {
     return high1High2Exams.map((ex: any) => {
       const scores = Array.isArray(ex.scores) ? ex.scores : []
       const row: any = { name: ex.exam_name || "" }
@@ -53,6 +61,26 @@ export function High1High2TestTab(props: High1High2TestTabProps) {
       }
       // チェックされた科目のみを含める
       visibleSubjects.forEach((subj) => { row[subj] = devByCanon[subj] })
+      return row
+    })
+  }, [high1High2Exams, visibleSubjects])
+
+  // 得点推移用のデータ
+  const scoreChartData = useMemo(() => {
+    return high1High2Exams.map((ex: any) => {
+      const scores = Array.isArray(ex.scores) ? ex.scores : []
+      const row: any = { name: ex.exam_name || "" }
+      const scoreByCanon: Record<string, number | undefined> = {}
+      for (const sc of scores) {
+        const canon = normalizeSubjectName(sc.subject_name)
+        if (!canon) continue
+        if (typeof sc.score !== "undefined" && sc.score !== null) {
+          const v = Number(sc.score)
+          if (!Number.isNaN(v)) scoreByCanon[canon] = v
+        }
+      }
+      // チェックされた科目のみを含める
+      visibleSubjects.forEach((subj) => { row[subj] = scoreByCanon[subj] })
       return row
     })
   }, [high1High2Exams, visibleSubjects])
@@ -104,16 +132,29 @@ export function High1High2TestTab(props: High1High2TestTabProps) {
     setCheckedSubjects(newChecked)
   }
 
+  const handleSelectAll = () => {
+    const newChecked = new Set(presentSubjects)
+    setCheckedSubjects(newChecked)
+  }
+
+  const handleDeselectAll = () => {
+    setCheckedSubjects(new Set())
+  }
+
   return (
     <div className="space-y-6">
-      <ExamChart
-        chartData={chartData}
+      <ExamChartWithTabs
+        deviationChartData={deviationChartData}
+        scoreChartData={scoreChartData}
         presentSubjects={presentSubjects}
         visibleSubjects={visibleSubjects}
         checkedSubjects={checkedSubjects}
         subjectCodeMapFromPresent={subjectCodeMapFromPresent}
         onCheckboxChange={handleCheckboxChange}
+        onSelectAll={handleSelectAll}
+        onDeselectAll={handleDeselectAll}
       />
+
       <ExamTables
         scoreRows={scoreRows}
         presentSubjects={presentSubjects}

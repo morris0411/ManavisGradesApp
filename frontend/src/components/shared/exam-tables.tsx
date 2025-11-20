@@ -74,7 +74,7 @@ export function ExamTables({
           style={{ borderBottom: "1px solid #e5eef3" }}
         >
           <CardTitle 
-            className="text-xl font-bold"
+            className="text-xl font-bold pb-2"
             style={{ 
               background: "linear-gradient(135deg, #1BA4C3 0%, #0086A9 50%, #006580 100%)",
               WebkitBackgroundClip: "text",
@@ -219,11 +219,11 @@ export function ExamTables({
               backgroundClip: "text"
             }}
           >
-            志望大学判定一覧
+            志望校判定一覧
           </CardTitle>
           <Select value={selectedExam} onValueChange={onExamChange}>
             <SelectTrigger 
-              className="w-48"
+              className="w-51"
               style={{
                 borderColor: "#d0dce5"
               }}
@@ -251,7 +251,7 @@ export function ExamTables({
                   borderBottom: "2px solid #d0dce5"
                 }}>
                   <th 
-                    className="text-center py-3 px-6 font-semibold text-xs"
+                    className="text-center py-3 px-6 font-semibold text-xm"
                     style={{ 
                       color: "#006580",
                       writingMode: "horizontal-tb",
@@ -262,7 +262,7 @@ export function ExamTables({
                     志望順位
                   </th>
                   <th 
-                    className="text-left py-3 px-6 font-semibold text-xs"
+                    className="text-left py-3 px-6 font-semibold text-xm"
                     style={{ 
                       color: "#006580",
                       writingMode: "horizontal-tb",
@@ -273,7 +273,7 @@ export function ExamTables({
                     大学名
                   </th>
                   <th 
-                    className="text-left py-3 px-6 font-semibold text-xs"
+                    className="text-left py-3 px-6 font-semibold text-xm"
                     style={{ 
                       color: "#006580",
                       writingMode: "horizontal-tb",
@@ -284,7 +284,7 @@ export function ExamTables({
                     学部
                   </th>
                   <th 
-                    className="text-left py-3 px-6 font-semibold text-xs"
+                    className="text-left py-3 px-6 font-semibold text-xm"
                     style={{ 
                       color: "#006580",
                       writingMode: "horizontal-tb",
@@ -295,7 +295,7 @@ export function ExamTables({
                     募集区分
                   </th>
                   <th 
-                    className="text-center py-3 px-6 font-semibold text-xs"
+                    className="text-center py-3 px-6 font-semibold text-xm"
                     style={{ 
                       color: "#006580",
                       writingMode: "horizontal-tb",
@@ -303,10 +303,10 @@ export function ExamTables({
                       whiteSpace: "nowrap"
                     }}
                   >
-                    評テ
+                    共テ判定
                   </th>
                   <th 
-                    className="text-center py-3 px-6 font-semibold text-xs"
+                    className="text-center py-3 px-6 font-semibold text-xm"
                     style={{ 
                       color: "#006580",
                       writingMode: "horizontal-tb",
@@ -314,10 +314,10 @@ export function ExamTables({
                       whiteSpace: "nowrap"
                     }}
                   >
-                    評二
+                    2次判定
                   </th>
                   <th 
-                    className="text-center py-3 px-6 font-semibold text-xs"
+                    className="text-center py-3 px-6 font-semibold text-xm"
                     style={{ 
                       color: "#006580",
                       writingMode: "horizontal-tb",
@@ -325,7 +325,7 @@ export function ExamTables({
                       whiteSpace: "nowrap"
                     }}
                   >
-                    評総
+                    総合判定
                   </th>
                 </tr>
               </thead>
@@ -340,7 +340,7 @@ export function ExamTables({
                     className="hover:bg-blue-50 transition"
                   >
                     <td 
-                      className="text-center py-3 px-6 text-xs"
+                      className="text-center py-3 px-6 text-xm"
                       style={{ 
                         color: "#333",
                         writingMode: "horizontal-tb",
@@ -351,7 +351,7 @@ export function ExamTables({
                       {item.preference_order ? `${item.preference_order}` : "-"}
                     </td>
                     <td 
-                      className="py-3 px-6 font-semibold text-xs"
+                      className="py-3 px-6 font-semibold text-xm"
                       style={{ 
                         color: "#333",
                         writingMode: "horizontal-tb",
@@ -362,7 +362,7 @@ export function ExamTables({
                       {item.uni}
                     </td>
                     <td 
-                      className="py-3 px-6 text-xs"
+                      className="py-3 px-6 text-xm"
                       style={{ 
                         color: "#333",
                         writingMode: "horizontal-tb",
@@ -373,7 +373,7 @@ export function ExamTables({
                       {item.dept}
                     </td>
                     <td 
-                      className="py-3 px-6 text-xs"
+                      className="py-3 px-6 text-xm"
                       style={{ 
                         color: "#333",
                         writingMode: "horizontal-tb",
@@ -392,7 +392,7 @@ export function ExamTables({
                       }}
                     >
                       {item.judgement_kyote ? (
-                        <Badge className={getJudgmentColor(item.judgement_kyote)}>{item.judgement_kyote}</Badge>
+                        <Badge className={`${getJudgmentColor(item.judgement_kyote)} text-xm hover:!bg-opacity-100 hover:!bg-[inherit]`} style={{ pointerEvents: "none" }}>{item.judgement_kyote}</Badge>
                       ) : (
                         <span style={{ color: "#666e7e" }}>-</span>
                       )}
@@ -406,7 +406,7 @@ export function ExamTables({
                       }}
                     >
                       {item.judgement_niji ? (
-                        <Badge className={getJudgmentColor(item.judgement_niji)}>{item.judgement_niji}</Badge>
+                        <Badge className={`${getJudgmentColor(item.judgement_niji)} text-xm hover:!bg-opacity-100 hover:!bg-[inherit]`} style={{ pointerEvents: "none" }}>{item.judgement_niji}</Badge>
                       ) : (
                         <span style={{ color: "#666e7e" }}>-</span>
                       )}
@@ -420,7 +420,7 @@ export function ExamTables({
                       }}
                     >
                       {item.judgement_sougou ? (
-                        <Badge className={getJudgmentColor(item.judgement_sougou)}>{item.judgement_sougou}</Badge>
+                        <Badge className={`${getJudgmentColor(item.judgement_sougou)} text-xm hover:!bg-opacity-100 hover:!bg-[inherit]`} style={{ pointerEvents: "none" }}>{item.judgement_sougou}</Badge>
                       ) : (
                         <span style={{ color: "#666e7e" }}>-</span>
                       )}

@@ -1,9 +1,9 @@
 "use client"
 
 import React, { useMemo, useState } from "react"
-import { normalizeSubjectName } from "../utils/subject-utils"
+import { normalizeSubjectName, getFullScoreForCommonTest } from "../utils/subject-utils"
 import { collectSubjectsWithCode, createSubjectCodeMap, getDefaultCheckedSubjects } from "../utils/exam-data-utils"
-import { ExamChart } from "./shared/exam-chart"
+import { ExamChartWithTabs } from "./shared/exam-chart"
 import { ExamTables } from "./shared/exam-tables"
 
 type CommonTestTabProps = { exams?: Array<any> }
@@ -19,18 +19,25 @@ export function CommonTestTab(props: CommonTestTabProps) {
     return collectSubjectsWithCode(kyoteExams)
   }, [kyoteExams])
 
+  // 非表示にする科目コード
+  const hiddenSubjectCodes = new Set([2580, 2920, 2930, 3120, 3220, 3320, 3210, 3110])
+
   const presentSubjects = useMemo(() => {
-    return presentSubjectsWithCode.map(s => s.name)
+    return presentSubjectsWithCode
+      .filter(s => !hiddenSubjectCodes.has(s.code))
+      .map(s => s.name)
   }, [presentSubjectsWithCode])
 
-  // 科目名から科目コードへのマップ（presentSubjectsWithCodeから作成）
+  // 科目名から科目コードへのマップ（フィルタリング後の科目のみ）
   const subjectCodeMapFromPresent = useMemo(() => {
-    return createSubjectCodeMap(presentSubjectsWithCode)
+    const filtered = presentSubjectsWithCode.filter(s => !hiddenSubjectCodes.has(s.code))
+    return createSubjectCodeMap(filtered)
   }, [presentSubjectsWithCode])
 
   // チェックボックスの状態管理（デフォルトで1000の位が7の科目のみチェック）
   const [checkedSubjects, setCheckedSubjects] = useState<Set<string>>(() => {
-    return getDefaultCheckedSubjects(presentSubjectsWithCode)
+    const filtered = presentSubjectsWithCode.filter(s => !hiddenSubjectCodes.has(s.code))
+    return getDefaultCheckedSubjects(filtered)
   })
 
   // チェックされた科目のみ
@@ -38,7 +45,8 @@ export function CommonTestTab(props: CommonTestTabProps) {
     return presentSubjects.filter(subj => checkedSubjects.has(subj))
   }, [presentSubjects, checkedSubjects])
 
-  const chartData = useMemo(() => {
+  // 偏差値推移用のデータ
+  const deviationChartData = useMemo(() => {
     return kyoteExams.map((ex: any) => {
       const scores = Array.isArray(ex.scores) ? ex.scores : []
       const row: any = { name: ex.exam_name || "" }
@@ -56,6 +64,40 @@ export function CommonTestTab(props: CommonTestTabProps) {
       return row
     })
   }, [kyoteExams, visibleSubjects])
+
+  // 得点推移用のデータ（得点率に変換）
+  const scoreChartData = useMemo(() => {
+    return kyoteExams.map((ex: any) => {
+      const scores = Array.isArray(ex.scores) ? ex.scores : []
+      const row: any = { name: ex.exam_name || "" }
+      const scoreByCanon: Record<string, number | undefined> = {}
+      const originalScoreByCanon: Record<string, number | undefined> = {}
+      
+      for (const sc of scores) {
+        const canon = normalizeSubjectName(sc.subject_name)
+        if (!canon) continue
+        if (typeof sc.score !== "undefined" && sc.score !== null) {
+          const v = Number(sc.score)
+          if (!Number.isNaN(v)) {
+            originalScoreByCanon[canon] = v
+            // 得点率を計算
+            const code = subjectCodeMapFromPresent.get(canon) ?? 999999
+            const fullScore = getFullScoreForCommonTest(code, presentSubjects, subjectCodeMapFromPresent)
+            if (fullScore > 0) {
+              scoreByCanon[canon] = (v / fullScore) * 100
+            }
+          }
+        }
+      }
+      // チェックされた科目のみを含める（得点率）
+      visibleSubjects.forEach((subj) => { 
+        row[subj] = scoreByCanon[subj]
+        // 元の得点も保存（ツールチップ用）
+        row[`${subj}_original`] = originalScoreByCanon[subj]
+      })
+      return row
+    })
+  }, [kyoteExams, visibleSubjects, subjectCodeMapFromPresent])
 
   const scoreRows = useMemo(() => {
     return kyoteExams.map((ex: any) => {
@@ -104,16 +146,30 @@ export function CommonTestTab(props: CommonTestTabProps) {
     setCheckedSubjects(newChecked)
   }
 
+  const handleSelectAll = () => {
+    const newChecked = new Set(presentSubjects)
+    setCheckedSubjects(newChecked)
+  }
+
+  const handleDeselectAll = () => {
+    setCheckedSubjects(new Set())
+  }
+
   return (
     <div className="space-y-6">
-      <ExamChart
-        chartData={chartData}
+      <ExamChartWithTabs
+        deviationChartData={deviationChartData}
+        scoreChartData={scoreChartData}
         presentSubjects={presentSubjects}
         visibleSubjects={visibleSubjects}
         checkedSubjects={checkedSubjects}
         subjectCodeMapFromPresent={subjectCodeMapFromPresent}
         onCheckboxChange={handleCheckboxChange}
+        isScoreRate={true}
+        onSelectAll={handleSelectAll}
+        onDeselectAll={handleDeselectAll}
       />
+
       <ExamTables
         scoreRows={scoreRows}
         presentSubjects={presentSubjects}

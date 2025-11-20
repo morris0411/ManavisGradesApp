@@ -119,127 +119,13 @@ const StudentDetail = () => {
           <div className="w-full px-4 py-8">
             <PerformanceDashboard exams={data.exams} />
             <div className="mt-12">
-              <UniversityJudgmentSection />
+              <UniversityJudgmentSection exams={data.exams} />
             </div>
           </div>
         </div>
 
         {/* Exam List Section */}
-        <section className="mt-8">
-          <div className="mb-6">
-            <h3 className="text-2xl font-bold mb-2" style={{ color: "#006580" }}>受験した模試</h3>
-            <p className="text-sm" style={{ color: "#666e7e" }}>
-              これまでに受験した模試の詳細情報
-            </p>
-          </div>
-          {Array.isArray(data.exams) && data.exams.length > 0 ? (
-            <div className="grid gap-6">
-              {data.exams.map((ex, idx) => (
-                <div 
-                  key={idx} 
-                  className="rounded-lg overflow-hidden"
-                  style={{ backgroundColor: "#ffffff", boxShadow: "0 1px 3px rgba(0, 101, 128, 0.08)" }}
-                >
-                  {/* Exam Header */}
-                  <div 
-                    className="px-6 py-4"
-                    style={{ backgroundColor: "#006580", borderBottom: "1px solid #e5eef3" }}
-                  >
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <div className="font-bold text-lg text-white">{ex.exam_name}</div>
-                        <div className="text-sm text-white opacity-90 mt-1">{ex.exam_year}年 / 区分: {ex.exam_type}</div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Exam Content */}
-                  <div className="p-6" style={{ backgroundColor: "#ffffff" }}>
-                    {/* Universities Section */}
-                    <div className="mb-8">
-                      <h4 className="font-bold text-base mb-4 pb-2 border-b-2" style={{ color: "#006580", borderColor: "#1BA4C3" }}>志望校</h4>
-                      {ex.judgements && ex.judgements.length > 0 ? (
-                        <div className="space-y-3">
-                          {ex.judgements.map((j, jdx) => (
-                            <div 
-                              key={jdx} 
-                              className="flex justify-between items-start p-3 rounded-lg"
-                              style={{ backgroundColor: "#f0f5f9" }}
-                            >
-                              <div className="flex-1">
-                                <div className="font-semibold text-sm" style={{ color: "#006580" }}>
-                                  {j.preference_order ? `第${j.preference_order}志望` : "その他"}
-                                </div>
-                                <div className="text-sm mt-1" style={{ color: "#666e7e" }}>
-                                  {j.university_name} {j.faculty_name} {j.department_name}
-                                </div>
-                              </div>
-                              {j.judgement && (
-                                <div 
-                                  className="ml-4 px-3 py-1 rounded-full text-xs font-medium text-white"
-                                  style={{ 
-                                    backgroundColor: j.judgement === "A判定" ? "#1BA4C3" : j.judgement === "B判定" ? "#0086A9" : "#006580" 
-                                  }}
-                                >
-                                  {j.judgement}
-                                </div>
-                              )}
-                            </div>
-                          ))}
-                        </div>
-                      ) : (
-                        <div className="text-sm" style={{ color: "#666e7e" }}>志望データなし</div>
-                      )}
-                    </div>
-
-                    {/* Scores Section */}
-                    <div>
-                      <h4 className="font-bold text-base mb-4 pb-2 border-b-2" style={{ color: "#006580", borderColor: "#1BA4C3" }}>科目スコア</h4>
-                      {ex.scores && ex.scores.length > 0 ? (
-                        <div className="overflow-x-auto">
-                          <table className="w-full">
-                            <thead>
-                              <tr style={{ backgroundColor: "#f0f5f9", borderBottom: "2px solid #d0dce5" }}>
-                                <th className="px-6 py-3 text-left text-xs font-semibold" style={{ color: "#006580" }}>科目</th>
-                                <th className="px-6 py-3 text-left text-xs font-semibold" style={{ color: "#006580" }}>得点</th>
-                                <th className="px-6 py-3 text-left text-xs font-semibold" style={{ color: "#006580" }}>偏差値</th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              {ex.scores.map((s, sdx) => (
-                                <tr 
-                                  key={sdx} 
-                                  style={{
-                                    backgroundColor: sdx % 2 === 0 ? "#ffffff" : "#f8fafb",
-                                    borderBottom: "1px solid #e5eef3"
-                                  }}
-                                  className="hover:bg-blue-50 transition"
-                                >
-                                  <td className="px-6 py-4 text-sm" style={{ color: "#333" }}>{s.subject_name}</td>
-                                  <td className="px-6 py-4 text-sm" style={{ color: "#333" }}>{s.score}</td>
-                                  <td className="px-6 py-4 text-sm font-semibold" style={{ color: "#1BA4C3" }}>{s.deviation_value}</td>
-                                </tr>
-                              ))}
-                            </tbody>
-                          </table>
-                        </div>
-                      ) : (
-                        <div className="text-sm" style={{ color: "#666e7e" }}>スコアデータなし</div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-            ))}
-          </div>
-        ) : (
-          <div 
-            className="rounded-lg p-12 text-center"
-            style={{ backgroundColor: "#ffffff", boxShadow: "0 1px 3px rgba(0, 101, 128, 0.08)" }}
-          >
-            <p className="text-sm" style={{ color: "#666e7e" }}>模試データなし</p>
-          </div>
-        )}
-      </section>
+        
     </div>
     </div>
   );

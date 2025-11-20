@@ -2,6 +2,7 @@ import React, { useEffect, useState, useMemo } from "react";
 import { useParams, Link } from "react-router-dom";
 import { fetchExamResults, filterExamResults, searchExams, fetchTopUniversities } from "../../api/exams";
 import { Breadcrumb } from "../../components/Breadcrumb";
+import { getJudgmentColor } from "../../utils/subject-utils";
 
 const ExamsDetail = () => {
   const { examId } = useParams();
@@ -10,6 +11,7 @@ const ExamsDetail = () => {
   const [error, setError] = useState("");
   const [examName, setExamName] = useState("");
   const [examYear, setExamYear] = useState("");
+  const [examType, setExamType] = useState("");
 
   const [name, setName] = useState("");
   const [university, setUniversity] = useState("");
@@ -48,6 +50,7 @@ const ExamsDetail = () => {
         if (exam) {
           setExamName(exam.exam_name);
           setExamYear(exam.exam_year || "");
+          setExamType(exam.exam_type || "");
         }
       } catch (e) {
         console.error("模試情報の取得に失敗しました", e);
@@ -133,6 +136,36 @@ const ExamsDetail = () => {
       return numA - numB;
     });
   }, [rows]);
+
+  // 判定列の表示可否を判定
+  const shouldShowJudgmentKyote = useMemo(() => {
+    if (examType === "共テ") {
+      // 共テの場合は、評テが存在するかチェック
+      return rows.some((row) => {
+        return preferenceColumns.some((col) => {
+          const prefData = row[col];
+          if (prefData && typeof prefData === "object") {
+            return prefData.judgement_kyote && prefData.judgement_kyote.trim() !== "";
+          }
+          return false;
+        });
+      });
+    }
+    return false;
+  }, [examType, rows, preferenceColumns]);
+
+  const shouldShowJudgmentNiji = useMemo(() => {
+    // 評二は常に表示（記述、高1/高2、OP、共テすべて）
+    return rows.some((row) => {
+      return preferenceColumns.some((col) => {
+        const prefData = row[col];
+        if (prefData && typeof prefData === "object") {
+          return prefData.judgement_niji && prefData.judgement_niji.trim() !== "";
+        }
+        return false;
+      });
+    });
+  }, [rows, preferenceColumns]);
 
   const examTitle = examYear ? `${examYear}年 ${examName || "模試詳細"}` : (examName || "模試詳細");
 
@@ -381,51 +414,118 @@ const ExamsDetail = () => {
                     borderBottom: "2px solid #d0dce5" 
                   }}>
                     <th 
-                      className="px-6 py-3 text-left text-xs font-semibold"
+                      rowSpan={2}
+                      className="px-1 py-3 text-center text-xs font-semibold"
                       style={{ 
                         color: "#006580",
                         writingMode: "horizontal-tb",
                         textOrientation: "mixed",
-                        whiteSpace: "nowrap"
+                        whiteSpace: "nowrap",
+                        borderRight: "1px solid #d0dce5"
                       }}
                     >
                       マナビス生番号
                     </th>
                     <th 
-                      className="px-6 py-3 text-left text-xs font-semibold"
+                      rowSpan={2}
+                      className="px-1 py-3 text-center text-xs font-semibold"
                       style={{ 
                         color: "#006580",
                         writingMode: "horizontal-tb",
                         textOrientation: "mixed",
-                        whiteSpace: "nowrap"
+                        whiteSpace: "nowrap",
+                        borderRight: "1px solid #d0dce5"
                       }}
                     >
                       氏名
                     </th>
                     <th 
-                      className="px-6 py-3 text-left text-xs font-semibold"
+                      rowSpan={2}
+                      className="px-1 py-3 text-center text-xs font-semibold"
                       style={{ 
                         color: "#006580",
                         writingMode: "horizontal-tb",
                         textOrientation: "mixed",
-                        whiteSpace: "nowrap"
+                        whiteSpace: "nowrap",
+                        borderRight: "1px solid #d0dce5"
                       }}
                     >
-                      学校名
+                      高校名
                     </th>
                     {preferenceColumns.map((col) => (
-                      <th 
-                        key={col}
-                        className="px-6 py-3 text-left text-xs font-semibold"
-                        style={{ 
-                          color: "#006580",
-                          writingMode: "horizontal-tb",
-                          textOrientation: "mixed",
-                          whiteSpace: "nowrap"
-                        }}
-                      >
-                        {col}
-                      </th>
+                      <React.Fragment key={col}>
+                        <th 
+                          colSpan={3 + (shouldShowJudgmentKyote ? 1 : 0) + (shouldShowJudgmentNiji ? 1 : 0)}
+                          className="px-1 py-3 text-center text-xs font-semibold"
+                          style={{ 
+                            color: "#006580",
+                            borderRight: "1px solid #d0dce5"
+                          }}
+                        >
+                          {col}
+                        </th>
+                      </React.Fragment>
+                    ))}
+                  </tr>
+                  <tr style={{ 
+                    backgroundColor: "#f0f5f9", 
+                    borderBottom: "2px solid #d0dce5" 
+                  }}>
+                    {preferenceColumns.map((col) => (
+                      <React.Fragment key={col}>
+                        <th 
+                          className="px-1 py-3 text-center text-xs font-semibold"
+                          style={{ 
+                            color: "#006580",
+                            whiteSpace: "nowrap"
+                          }}
+                        >
+                          大学
+                        </th>
+                        <th 
+                          className="px-1 py-3 text-center text-xs font-semibold"
+                          style={{ 
+                            color: "#006580",
+                            whiteSpace: "nowrap"
+                          }}
+                        >
+                          学部
+                        </th>
+                        <th 
+                          className="px-1 py-3 text-center text-xs font-semibold"
+                          style={{ 
+                            color: "#006580",
+                            whiteSpace: "nowrap",
+                            borderRight: "1px solid #d0dce5"
+                          }}
+                        >
+                          募集区分
+                        </th>
+                        {shouldShowJudgmentKyote && (
+                          <th 
+                            className="px-1 py-3 text-center text-xs font-semibold"
+                            style={{ 
+                              color: "#006580",
+                              whiteSpace: "nowrap",
+                              borderRight: shouldShowJudgmentNiji ? "none" : "1px solid #d0dce5"
+                            }}
+                          >
+                            共テ
+                          </th>
+                        )}
+                        {shouldShowJudgmentNiji && (
+                          <th 
+                            className="px-2 py-3 text-center text-xs font-semibold"
+                            style={{ 
+                              color: "#006580",
+                              whiteSpace: "nowrap",
+                              borderRight: "1px solid #d0dce5"
+                            }}
+                          >
+                            2次
+                          </th>
+                        )}
+                      </React.Fragment>
                     ))}
                   </tr>
                 </thead>
@@ -440,22 +540,20 @@ const ExamsDetail = () => {
                       className="hover:bg-blue-50 transition"
                     >
                       <td 
-                        className="px-6 py-4 text-sm"
+                        className="px-1 py-4 text-sm text-center"
                         style={{ 
                           color: "#333",
-                          writingMode: "horizontal-tb",
-                          textOrientation: "mixed",
-                          whiteSpace: "nowrap"
+                          whiteSpace: "nowrap",
+                          borderRight: "1px solid #d0dce5"
                         }}
                       >
                         {r.student_id}
                       </td>
                       <td 
-                        className="px-6 py-4 text-sm"
+                        className="px-1 py-4 text-sm text-center"
                         style={{
-                          writingMode: "horizontal-tb",
-                          textOrientation: "mixed",
-                          whiteSpace: "nowrap"
+                          whiteSpace: "nowrap",
+                          borderRight: "1px solid #d0dce5"
                         }}
                       >
                         <Link
@@ -469,30 +567,95 @@ const ExamsDetail = () => {
                         </Link>
                       </td>
                       <td 
-                        className="px-6 py-4 text-sm"
+                        className="px-1 py-4 text-sm text-center"
                         style={{ 
                           color: "#666e7e",
-                          writingMode: "horizontal-tb",
-                          textOrientation: "mixed",
-                          whiteSpace: "nowrap"
+                          whiteSpace: "nowrap",
+                          borderRight: "1px solid #d0dce5"
                         }}
                       >
                         {r.school_name}
                       </td>
-                      {preferenceColumns.map((col) => (
-                        <td 
-                          key={col}
-                          className="px-6 py-4 text-sm"
-                          style={{ 
-                            color: "#333",
-                            writingMode: "horizontal-tb",
-                            textOrientation: "mixed",
-                            whiteSpace: "nowrap"
-                          }}
-                        >
-                          {r[col] || "-"}
-                        </td>
-                      ))}
+                      {preferenceColumns.map((col) => {
+                        const prefData = r[col];
+                        const isObject = prefData && typeof prefData === "object";
+                        const uni = isObject ? (prefData.university_name || "") : "";
+                        const fac = isObject ? (prefData.faculty_name || "") : "";
+                        const dep = isObject ? (prefData.department_name || "") : "";
+                        const jk = isObject ? (prefData.judgement_kyote || "") : "";
+                        const jn = isObject ? (prefData.judgement_niji || "") : "";
+                        
+                        return (
+                          <React.Fragment key={col}>
+                            <td 
+                              className="px-1 py-4 text-sm text-center"
+                              style={{ 
+                                color: "#333",
+                                whiteSpace: "nowrap"
+                              }}
+                            >
+                              {uni || "-"}
+                            </td>
+                            <td 
+                              className="px-1 py-4 text-sm text-center"
+                              style={{ 
+                                color: "#333",
+                                whiteSpace: "nowrap"
+                              }}
+                            >
+                              {fac || "-"}
+                            </td>
+                            <td 
+                              className="px-1 py-4 text-sm text-center"
+                              style={{ 
+                                color: "#333",
+                                whiteSpace: "nowrap",
+                                borderRight: "1px solid #d0dce5"
+                              }}
+                            >
+                              {dep || "-"}
+                            </td>
+                            {shouldShowJudgmentKyote && (
+                              <td 
+                                className="px-1 py-4 text-sm text-center"
+                                style={{ 
+                                  whiteSpace: "nowrap",
+                                  borderRight: shouldShowJudgmentNiji ? "none" : "1px solid #d0dce5"
+                                }}
+                              >
+                                {jk ? (
+                                  <span 
+                                    className={`inline-block w-full py-1 rounded ${getJudgmentColor(jk)}`}
+                                  >
+                                    {jk}
+                                  </span>
+                                ) : (
+                                  <span style={{ color: "#666e7e" }}>-</span>
+                                )}
+                              </td>
+                            )}
+                            {shouldShowJudgmentNiji && (
+                              <td 
+                                className="px-1 py-4 text-sm text-center"
+                                style={{ 
+                                  whiteSpace: "nowrap",
+                                  borderRight: "1px solid #d0dce5"
+                                }}
+                              >
+                                {jn ? (
+                                  <span 
+                                    className={`inline-block w-full py-1 rounded ${getJudgmentColor(jn)}`}
+                                  >
+                                    {jn}
+                                  </span>
+                                ) : (
+                                  <span style={{ color: "#666e7e" }}>-</span>
+                                )}
+                              </td>
+                            )}
+                          </React.Fragment>
+                        );
+                      })}
                     </tr>
                   ))}
                 </tbody>

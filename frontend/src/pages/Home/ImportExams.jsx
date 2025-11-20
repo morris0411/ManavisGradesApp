@@ -14,7 +14,12 @@ export default function ImportExams() {
       const res = await uploadExamsXlsx(file);
       setLog(JSON.stringify(res, null, 2));
     } catch (e) {
-      setLog(String(e));
+      // 重複エラーの場合は特別なメッセージを表示
+      if (e?.response?.data?.error === "duplicate") {
+        setLog(e.response.data.message);
+      } else {
+        setLog(String(e));
+      }
     } finally {
       setBusy(false);
     }

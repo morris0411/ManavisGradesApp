@@ -108,3 +108,47 @@ export function normalizeSubjectName(raw?: string): string {
   return s
 }
 
+/**
+ * 科目コードから満点を取得（共テ用）
+ * @param code 科目コード
+ * @param presentSubjects 凡例や教科別得点に表示されている科目すべてのリスト（千の位が7の場合に使用）
+ * @param subjectCodeMap 科目名から科目コードへのマップ（千の位が7の場合に使用）
+ * @returns 満点
+ */
+export function getFullScoreForCommonTest(
+  code: number,
+  presentSubjects?: string[],
+  subjectCodeMap?: Map<string, number>
+): number {
+  const thousandsDigit = Math.floor(code / 1000)
+  
+  switch (thousandsDigit) {
+    case 1:
+    case 2:
+    case 4:
+    case 5:
+    case 6:
+      return 100
+    case 3:
+      return 200
+    case 7:
+      // 表示されている科目すべて（7以外）の合計
+      if (presentSubjects && subjectCodeMap) {
+        let total = 0
+        for (const subject of presentSubjects) {
+          const subjectCode = subjectCodeMap.get(subject) ?? 999999
+          const subjectThousandsDigit = Math.floor(subjectCode / 1000)
+          // 7の科目は除外（7の科目の満点は他の科目の合計）
+          if (subjectThousandsDigit === 7) {
+            continue
+          }
+          total += getFullScoreForCommonTest(subjectCode, presentSubjects, subjectCodeMap)
+        }
+        return total
+      }
+      return 100 // フォールバック
+    default:
+      return 100 // デフォルト
+  }
+}
+

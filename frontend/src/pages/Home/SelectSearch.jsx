@@ -25,7 +25,7 @@ const SelectSearch = () => {
               backgroundClip: "text"
             }}
           >
-            ホーム
+            河合塾マナビス 全統模試管理システム
           </h1>
           <p className="text-sm" style={{ color: "#666e7e" }}>
             成績の検索、データのインポートを行います
@@ -110,6 +110,17 @@ const SelectSearch = () => {
                 onMouseLeave={(e) => e.target.style.backgroundColor = "#0086A9"}
               >
                 模試Excelインポート
+              </Link>
+              <Link 
+                to="/import/academic-year-update" 
+                className="block w-full px-6 py-3 text-white no-underline rounded-md font-medium text-center transition hover:shadow-lg"
+                style={{ 
+                  backgroundColor: "#dc2626"
+                }}
+                onMouseEnter={(e) => e.target.style.backgroundColor = "#b91c1c"}
+                onMouseLeave={(e) => e.target.style.backgroundColor = "#dc2626"}
+              >
+                年度更新
               </Link>
             </div>
           </div>

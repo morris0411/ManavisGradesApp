@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, datetime
 from . import db
 
 
@@ -113,3 +113,11 @@ class Users(db.Model):
     user_id = db.Column(db.Integer, primary_key=True)
     login_id = db.Column(db.String, nullable=False, unique=True)
     password_hash = db.Column(db.String, nullable=False)
+
+
+class SystemSettings(db.Model):
+    __tablename__ = 'system_settings'
+    
+    setting_key = db.Column(db.String, primary_key=True)
+    setting_value = db.Column(db.String, nullable=False)
+    updated_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)

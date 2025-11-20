@@ -189,7 +189,7 @@ export function StudentPerformanceHeader(props: HeaderProps) {
                         className="text-sm font-semibold mb-2"
                         style={{ color: "#666e7e" }}
                       >
-                        評テ
+                        共テ判定
                       </p>
                       <p 
                         className="text-4xl font-bold"
@@ -203,7 +203,7 @@ export function StudentPerformanceHeader(props: HeaderProps) {
                         className="text-sm font-semibold mb-2"
                         style={{ color: "#666e7e" }}
                       >
-                        評二
+                        2次判定
                       </p>
                       <p 
                         className="text-4xl font-bold"
@@ -217,7 +217,7 @@ export function StudentPerformanceHeader(props: HeaderProps) {
                         className="text-sm font-semibold mb-2"
                         style={{ color: "#666e7e" }}
                       >
-                        評総
+                        総合判定
                       </p>
                       <p 
                         className="text-4xl font-bold"
