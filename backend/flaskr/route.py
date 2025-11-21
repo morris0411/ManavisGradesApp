@@ -1,4 +1,5 @@
 from flask import Blueprint, jsonify, request
+from werkzeug.datastructures import FileStorage
 # students service の関数を直接参照しない（blueprint側で呼び出すため削除）
 from . import db
 from .models import Students
@@ -9,6 +10,7 @@ from .models import Universities, Faculties, Students, Exams, ExamResults, Subje
 import pandas as pd
 import os
 import openpyxl
+import io
 
 bp = Blueprint("api", __name__)
 
@@ -75,30 +77,62 @@ def seed_exam_master():
     
 @bp.route("/api/seed_master", methods=["POST"])
 def import_masters():
-    # ファイルパス
-    subjects_path = r"C:\ManavisGradesApp\backend\科目コード.csv"
+    # ファイルアップロードから取得
+    file = request.files.get("subject_master")
+    if not file:
+        return jsonify({"error": "subject_master ファイルがありません"}), 400
 
-    result = {"subjects": 0}
+    result = {"subjects": 0, "read_from_file": 0, "existing": 0, "new": 0, "skipped": 0}
 
     # --- 科目マスタの取り込み ---
     try:
-        df_subj = pd.read_csv(subjects_path, encoding="utf-8-sig").dropna(subset=["subject_code", "subject_name"])
+        raw = file.read()
+        # まずUTF-8で読み取り、失敗したらCP932で再試行
+        def read_any(enc: str):
+            bio = io.BytesIO(raw)
+            return pd.read_csv(bio, encoding=enc)
+        
+        try:
+            df_subj = read_any("utf-8-sig")
+        except Exception:
+            df_subj = read_any("cp932")
+        
+        # 列名の確認
+        if "subject_code" not in df_subj.columns or "subject_name" not in df_subj.columns:
+            return jsonify({
+                "error": f"CSVに必要な列が見つかりません。列名: {list(df_subj.columns)}"
+            }), 400
+        
+        df_subj = df_subj.dropna(subset=["subject_code", "subject_name"])
+        result["read_from_file"] = len(df_subj)
+        
         existing_codes = {s.subject_code for s in SubjectMaster.query.all()}
+        result["existing"] = len(existing_codes)
+        
         new_subjects = []
+        skipped = 0
         for _, row in df_subj.iterrows():
             try:
                 code = int(row["subject_code"])
                 name = str(row["subject_name"]).strip()
                 if code not in existing_codes:
                     new_subjects.append(SubjectMaster(subject_code=code, subject_name=name))
+                else:
+                    skipped += 1
             except (ValueError, TypeError):
+                skipped += 1
                 continue
+        
+        result["new"] = len(new_subjects)
+        result["skipped"] = skipped
+        
         if new_subjects:
             db.session.add_all(new_subjects)
             db.session.commit()
         result["subjects"] = SubjectMaster.query.count()
-    except FileNotFoundError:
-        pass
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": str(e)}), 500
 
     return jsonify({
         "imported": result,
