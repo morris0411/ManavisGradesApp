@@ -39,8 +39,8 @@ def seed_exam_master():
         (18, "第1回名大入試オープン"),
         (31, "早慶レベル模試"),
         # 高3（第3回）
-        (7, "第3回全統記述模試"),
         (3, "第3回全統共通テスト模試"),
+        (7, "第3回全統記述模試"),
         # 大学別模試（第2回/他）
         (13, "第2回東大入試オープン"),
         (16, "第2回京大入試オープン"),
@@ -77,69 +77,17 @@ def seed_exam_master():
 def import_masters():
     # ファイルパス
     subjects_path = r"C:\ManavisGradesApp\backend\科目コード.csv"
-    universities_path = r"C:\ManavisGradesApp\backend\大学コード.csv"
-    faculties_path = r"C:\ManavisGradesApp\backend\学部コード.csv"
 
-    result = {"universities": 0, "faculties": 0, "subjects": 0}
-
-    # --- 大学マスタの取り込み ---
-    try:
-        df_uni = pd.read_csv(universities_path, encoding="utf-8-sig").dropna(subset=["university_code", "university_name"]) 
-        existing_uni_ids = {u.university_id for u in Universities.query.all()}
-        new_uni = []
-        for _, row in df_uni.iterrows():
-            try:
-                code = int(row["university_code"])  # PKとして採用
-                name = str(row["university_name"]).strip()
-                if code not in existing_uni_ids:
-                    new_uni.append(Universities(university_id=code, university_name=name))
-            except (ValueError, TypeError):
-                continue
-        if new_uni:
-            db.session.add_all(new_uni)
-            db.session.commit()
-        result["universities"] = Universities.query.count()
-    except FileNotFoundError:
-        pass
-
-    # --- 学部マスタの取り込み（university_code を使用） ---
-    try:
-        df_fac = pd.read_csv(faculties_path, encoding="utf-8-sig").dropna(subset=["faculty_code", "faculty_name", "university_code"]) 
-        existing_fac_ids = {f.faculty_id for f in Faculties.query.all()}
-        existing_uni_ids = {u.university_id for u in Universities.query.all()}
-        new_unis = []
-        new_fac = []
-        for _, row in df_fac.iterrows():
-            try:
-                fac_code = int(row["faculty_code"])  # Faculties PK
-                uni_code = int(row["university_code"])  # Universities FK
-                fac_name = str(row["faculty_name"]).strip()
-                # 大学が未登録ならプレースホルダー名称で作成
-                if uni_code not in existing_uni_ids:
-                    new_unis.append(Universities(university_id=uni_code, university_name=f"未登録({uni_code})"))
-                    existing_uni_ids.add(uni_code)
-                if fac_code not in existing_fac_ids:
-                    new_fac.append(Faculties(faculty_id=fac_code, university_id=uni_code, faculty_name=fac_name))
-            except (ValueError, TypeError):
-                continue
-        if new_unis:
-            db.session.add_all(new_unis)
-            db.session.commit()
-        if new_fac:
-            db.session.add_all(new_fac)
-            db.session.commit()
-        result["faculties"] = Faculties.query.count()
-    except FileNotFoundError:
-        pass
+    result = {"subjects": 0}
 
     # --- 科目マスタの取り込み ---
     try:
-        df_subj = pd.read_csv(subjects_path, encoding="utf-8-sig").dropna(subset=["subject_code", "subject_name"]) 
+        df_subj = pd.read_csv(subjects_path, encoding="utf-8-sig").dropna(subset=["subject_code", "subject_name"])
         existing_codes = {s.subject_code for s in SubjectMaster.query.all()}
         new_subjects = []
         for _, row in df_subj.iterrows():
             try:
-                code = int(row["subject_code"]) 
+                code = int(row["subject_code"])
                 name = str(row["subject_name"]).strip()
                 if code not in existing_codes:
                     new_subjects.append(SubjectMaster(subject_code=code, subject_name=name))
@@ -154,5 +102,6 @@ def import_masters():
 
     return jsonify({
         "imported": result,
-        "status": "✅ マスタ取り込みが完了しました（存在分はスキップ）"
+        "status": "科目マスタ取り込みが完了しました（既存レコードはスキップ済み）"
     })
+
