@@ -6,7 +6,19 @@ from .. import db
 from sqlalchemy.orm import joinedload
 from sqlalchemy import or_, asc, desc
 
-TOP_UNIVERSITY_IDS = [1, 2, 3, 4, 5, 6, 7, 9, 11, 14]
+# 難関10大学の名称リスト（データベースに存在するもののみ取得）
+TOP_UNIVERSITY_NAMES = [
+    "北海道",
+    "東北",
+    "東京",
+    "名古屋",
+    "京都",
+    "大阪",
+    "一橋",
+    "東京科学",
+    "九州",
+    "神戸"
+]
 
 def list_years():
     rows = (
@@ -98,11 +110,11 @@ def get_exam_results(exam_id):
     return _format_exam_results(rows)
 
 def list_top_universities():
-    """難関10大学の一覧を取得"""
+    """難関10大学の一覧を取得（大学名ベースで検索）"""
     universities = (
         db.session.query(Universities.university_id, Universities.university_name)
-        .filter(Universities.university_id.in_(TOP_UNIVERSITY_IDS))
-        .order_by(Universities.university_id)
+        .filter(Universities.university_name.in_(TOP_UNIVERSITY_NAMES))
+        .order_by(Universities.university_name)
         .all()
     )
     return [{"university_id": u.university_id, "university_name": u.university_name} for u in universities]
@@ -141,7 +153,8 @@ def filter_exam_results(exam_id, name=None, university=None, university_id=None,
     if name:
         query = query.filter(Students.name.ilike(f"%{name}%"))
     if include_top_universities:
-        query = query.filter(Universities.university_id.in_(TOP_UNIVERSITY_IDS))
+        # 大学名ベースでフィルタリング
+        query = query.filter(Universities.university_name.in_(TOP_UNIVERSITY_NAMES))
     elif university_id:
         # プルダウンから選択した場合はuniversity_idで完全一致
         query = query.filter(Universities.university_id == university_id)
@@ -176,7 +189,8 @@ def filter_exam_results(exam_id, name=None, university=None, university_id=None,
         if name:
             subquery_base = subquery_base.filter(Students.name.ilike(f"%{name}%"))
         if include_top_universities:
-            subquery_base = subquery_base.filter(Universities.university_id.in_(TOP_UNIVERSITY_IDS))
+            # 大学名ベースでフィルタリング
+            subquery_base = subquery_base.filter(Universities.university_name.in_(TOP_UNIVERSITY_NAMES))
         elif university_id:
             subquery_base = subquery_base.filter(Universities.university_id == university_id)
         elif university:
@@ -322,7 +336,8 @@ def filter_exam_results(exam_id, name=None, university=None, university_id=None,
         if name:
             judgment_subquery_base = judgment_subquery_base.filter(Students.name.ilike(f"%{name}%"))
         if include_top_universities:
-            judgment_subquery_base = judgment_subquery_base.filter(Universities.university_id.in_(TOP_UNIVERSITY_IDS))
+            # 大学名ベースでフィルタリング
+            judgment_subquery_base = judgment_subquery_base.filter(Universities.university_name.in_(TOP_UNIVERSITY_NAMES))
         elif university_id:
             judgment_subquery_base = judgment_subquery_base.filter(Universities.university_id == university_id)
         elif university:
