@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useMemo } from "react";
 import { useParams, Link } from "react-router-dom";
 import { fetchExamResults, filterExamResults, searchExams, fetchTopUniversities } from "../../api/exams";
-import { Breadcrumb } from "../../components/Breadcrumb";
+import { Breadcrumb } from "@/components/layout/Breadcrumb";
 import { getJudgmentColor } from "../../utils/subject-utils";
 
 const ExamsDetail = () => {
@@ -187,9 +187,9 @@ const ExamsDetail = () => {
         {/* Title Section */}
         <div className="mb-8">
           <div className="flex items-baseline gap-3">
-            <h1 
+            <h1
               className="text-3xl font-bold"
-              style={{ 
+              style={{
                 background: "linear-gradient(135deg, #1BA4C3 0%, #0086A9 50%, #006580 100%)",
                 WebkitBackgroundClip: "text",
                 WebkitTextFillColor: "transparent",
@@ -205,24 +205,24 @@ const ExamsDetail = () => {
         </div>
 
         {/* Filter Card */}
-        <div 
-          className="rounded-lg p-6 mb-8" 
-          style={{ 
-            backgroundColor: "#ffffff", 
-            boxShadow: "0 1px 3px rgba(0, 101, 128, 0.08)" 
+        <div
+          className="rounded-lg p-6 mb-8"
+          style={{
+            backgroundColor: "#ffffff",
+            boxShadow: "0 1px 3px rgba(0, 101, 128, 0.08)"
           }}
         >
           <div className="flex gap-4 items-start flex-wrap">
             <div className="flex-1 min-w-[150px]">
-              <label 
+              <label
                 className="block mb-2 text-sm font-medium"
                 style={{ color: "#006580" }}
               >
                 氏名
               </label>
-              <input 
-                value={name} 
-                onChange={(e) => setName(e.target.value)} 
+              <input
+                value={name}
+                onChange={(e) => setName(e.target.value)}
                 placeholder="氏名を入力"
                 className="w-full px-4 py-2.5 rounded-md text-sm border transition"
                 style={{
@@ -233,15 +233,15 @@ const ExamsDetail = () => {
               />
             </div>
             <div className="flex-1 min-w-[150px]">
-              <label 
+              <label
                 className="block mb-2 text-sm font-medium"
                 style={{ color: "#006580" }}
               >
                 大学
               </label>
               <div className="flex flex-col gap-2">
-                <input 
-                  value={university} 
+                <input
+                  value={university}
                   onChange={(e) => handleUniversityInputChange(e.target.value)}
                   placeholder="大学名を入力"
                   className="w-full px-4 py-2.5 rounded-md text-sm border transition"
@@ -272,15 +272,15 @@ const ExamsDetail = () => {
               </div>
             </div>
             <div className="flex-1 min-w-[150px]">
-              <label 
+              <label
                 className="block mb-2 text-sm font-medium"
                 style={{ color: "#006580" }}
               >
                 学部
               </label>
-              <input 
-                value={faculty} 
-                onChange={(e) => setFaculty(e.target.value)} 
+              <input
+                value={faculty}
+                onChange={(e) => setFaculty(e.target.value)}
                 placeholder="学部名を入力"
                 className="w-full px-4 py-2.5 rounded-md text-sm border transition"
                 style={{
@@ -291,7 +291,7 @@ const ExamsDetail = () => {
               />
             </div>
             <div className="min-w-[120px]">
-              <label 
+              <label
                 className="block mb-2 text-sm font-medium"
                 style={{ color: "#006580" }}
               >
@@ -316,7 +316,7 @@ const ExamsDetail = () => {
             </div>
 
             <div className="min-w-[120px]">
-              <label 
+              <label
                 className="block mb-2 text-sm font-medium"
                 style={{ color: "#006580" }}
               >
@@ -340,8 +340,8 @@ const ExamsDetail = () => {
               </select>
             </div>
             <div className="flex gap-3 self-end">
-              <button 
-                onClick={doFilter} 
+              <button
+                onClick={doFilter}
                 className="px-6 py-2.5 rounded-md font-medium text-white text-sm transition hover:shadow-lg"
                 style={{
                   backgroundColor: "#1BA4C3"
@@ -351,8 +351,8 @@ const ExamsDetail = () => {
               >
                 検索
               </button>
-              <button 
-                onClick={handleResetFilters} 
+              <button
+                onClick={handleResetFilters}
                 className="px-5 py-2.5 rounded-md font-medium text-white text-sm transition hover:shadow-lg"
                 style={{
                   backgroundColor: "#666e7e"
@@ -368,38 +368,38 @@ const ExamsDetail = () => {
 
         {/* Results Section */}
         {loading ? (
-          <div 
+          <div
             className="rounded-lg p-12 text-center"
-            style={{ 
-              backgroundColor: "#ffffff", 
-              boxShadow: "0 1px 3px rgba(0, 101, 128, 0.08)" 
+            style={{
+              backgroundColor: "#ffffff",
+              boxShadow: "0 1px 3px rgba(0, 101, 128, 0.08)"
             }}
           >
             <p className="text-sm" style={{ color: "#666e7e" }}>読み込み中...</p>
           </div>
         ) : error ? (
-          <div 
+          <div
             className="rounded-lg p-12 text-center"
-            style={{ 
-              backgroundColor: "#ffffff", 
-              boxShadow: "0 1px 3px rgba(0, 101, 128, 0.08)" 
+            style={{
+              backgroundColor: "#ffffff",
+              boxShadow: "0 1px 3px rgba(0, 101, 128, 0.08)"
             }}
           >
             <p className="text-sm" style={{ color: "#b85a5a" }}>{error}</p>
           </div>
         ) : rows.length > 0 ? (
-          <div 
-            className="rounded-lg overflow-hidden" 
-            style={{ 
-              backgroundColor: "#ffffff", 
-              boxShadow: "0 1px 3px rgba(0, 101, 128, 0.08)" 
+          <div
+            className="rounded-lg overflow-hidden"
+            style={{
+              backgroundColor: "#ffffff",
+              boxShadow: "0 1px 3px rgba(0, 101, 128, 0.08)"
             }}
           >
-            <div 
-              className="px-6 py-4" 
-              style={{ 
-                backgroundColor: "#006580", 
-                borderBottom: "1px solid #e5eef3" 
+            <div
+              className="px-6 py-4"
+              style={{
+                backgroundColor: "#006580",
+                borderBottom: "1px solid #e5eef3"
               }}
             >
               <p className="text-sm font-medium text-white">
@@ -409,14 +409,14 @@ const ExamsDetail = () => {
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
-                  <tr style={{ 
-                    backgroundColor: "#f0f5f9", 
-                    borderBottom: "2px solid #d0dce5" 
+                  <tr style={{
+                    backgroundColor: "#f0f5f9",
+                    borderBottom: "2px solid #d0dce5"
                   }}>
-                    <th 
+                    <th
                       rowSpan={2}
                       className="px-1 py-3 text-center text-xs font-semibold"
-                      style={{ 
+                      style={{
                         color: "#006580",
                         writingMode: "horizontal-tb",
                         textOrientation: "mixed",
@@ -426,10 +426,10 @@ const ExamsDetail = () => {
                     >
                       マナビス生番号
                     </th>
-                    <th 
+                    <th
                       rowSpan={2}
                       className="px-1 py-3 text-center text-xs font-semibold"
-                      style={{ 
+                      style={{
                         color: "#006580",
                         writingMode: "horizontal-tb",
                         textOrientation: "mixed",
@@ -439,10 +439,10 @@ const ExamsDetail = () => {
                     >
                       氏名
                     </th>
-                    <th 
+                    <th
                       rowSpan={2}
                       className="px-1 py-3 text-center text-xs font-semibold"
-                      style={{ 
+                      style={{
                         color: "#006580",
                         writingMode: "horizontal-tb",
                         textOrientation: "mixed",
@@ -454,10 +454,10 @@ const ExamsDetail = () => {
                     </th>
                     {preferenceColumns.map((col) => (
                       <React.Fragment key={col}>
-                        <th 
+                        <th
                           colSpan={3 + (shouldShowJudgmentKyote ? 1 : 0) + (shouldShowJudgmentNiji ? 1 : 0)}
                           className="px-1 py-3 text-center text-xs font-semibold"
-                          style={{ 
+                          style={{
                             color: "#006580",
                             borderRight: "1px solid #d0dce5"
                           }}
@@ -467,33 +467,33 @@ const ExamsDetail = () => {
                       </React.Fragment>
                     ))}
                   </tr>
-                  <tr style={{ 
-                    backgroundColor: "#f0f5f9", 
-                    borderBottom: "2px solid #d0dce5" 
+                  <tr style={{
+                    backgroundColor: "#f0f5f9",
+                    borderBottom: "2px solid #d0dce5"
                   }}>
                     {preferenceColumns.map((col) => (
                       <React.Fragment key={col}>
-                        <th 
+                        <th
                           className="px-1 py-3 text-center text-xs font-semibold"
-                          style={{ 
+                          style={{
                             color: "#006580",
                             whiteSpace: "nowrap"
                           }}
                         >
                           大学
                         </th>
-                        <th 
+                        <th
                           className="px-1 py-3 text-center text-xs font-semibold"
-                          style={{ 
+                          style={{
                             color: "#006580",
                             whiteSpace: "nowrap"
                           }}
                         >
                           学部
                         </th>
-                        <th 
+                        <th
                           className="px-1 py-3 text-center text-xs font-semibold"
-                          style={{ 
+                          style={{
                             color: "#006580",
                             whiteSpace: "nowrap",
                             borderRight: "1px solid #d0dce5"
@@ -502,9 +502,9 @@ const ExamsDetail = () => {
                           募集区分
                         </th>
                         {shouldShowJudgmentKyote && (
-                          <th 
+                          <th
                             className="px-1 py-3 text-center text-xs font-semibold"
-                            style={{ 
+                            style={{
                               color: "#006580",
                               whiteSpace: "nowrap",
                               borderRight: shouldShowJudgmentNiji ? "none" : "1px solid #d0dce5"
@@ -514,9 +514,9 @@ const ExamsDetail = () => {
                           </th>
                         )}
                         {shouldShowJudgmentNiji && (
-                          <th 
+                          <th
                             className="px-2 py-3 text-center text-xs font-semibold"
-                            style={{ 
+                            style={{
                               color: "#006580",
                               whiteSpace: "nowrap",
                               borderRight: "1px solid #d0dce5"
@@ -539,9 +539,9 @@ const ExamsDetail = () => {
                       }}
                       className="hover:bg-blue-50 transition"
                     >
-                      <td 
+                      <td
                         className="px-1 py-4 text-sm text-center"
-                        style={{ 
+                        style={{
                           color: "#333",
                           whiteSpace: "nowrap",
                           borderRight: "1px solid #d0dce5"
@@ -549,7 +549,7 @@ const ExamsDetail = () => {
                       >
                         {r.student_id}
                       </td>
-                      <td 
+                      <td
                         className="px-1 py-4 text-sm text-center"
                         style={{
                           whiteSpace: "nowrap",
@@ -566,9 +566,9 @@ const ExamsDetail = () => {
                           {r.name}
                         </Link>
                       </td>
-                      <td 
+                      <td
                         className="px-1 py-4 text-sm text-center"
-                        style={{ 
+                        style={{
                           color: "#666e7e",
                           whiteSpace: "nowrap",
                           borderRight: "1px solid #d0dce5"
@@ -584,30 +584,30 @@ const ExamsDetail = () => {
                         const dep = isObject ? (prefData.department_name || "") : "";
                         const jk = isObject ? (prefData.judgement_kyote || "") : "";
                         const jn = isObject ? (prefData.judgement_niji || "") : "";
-                        
+
                         return (
                           <React.Fragment key={col}>
-                            <td 
+                            <td
                               className="px-1 py-4 text-sm text-center"
-                              style={{ 
+                              style={{
                                 color: "#333",
                                 whiteSpace: "nowrap"
                               }}
                             >
                               {uni || "-"}
                             </td>
-                            <td 
+                            <td
                               className="px-1 py-4 text-sm text-center"
-                              style={{ 
+                              style={{
                                 color: "#333",
                                 whiteSpace: "nowrap"
                               }}
                             >
                               {fac || "-"}
                             </td>
-                            <td 
+                            <td
                               className="px-1 py-4 text-sm text-center"
-                              style={{ 
+                              style={{
                                 color: "#333",
                                 whiteSpace: "nowrap",
                                 borderRight: "1px solid #d0dce5"
@@ -616,15 +616,15 @@ const ExamsDetail = () => {
                               {dep || "-"}
                             </td>
                             {shouldShowJudgmentKyote && (
-                              <td 
+                              <td
                                 className="px-1 py-4 text-sm text-center"
-                                style={{ 
+                                style={{
                                   whiteSpace: "nowrap",
                                   borderRight: shouldShowJudgmentNiji ? "none" : "1px solid #d0dce5"
                                 }}
                               >
                                 {jk ? (
-                                  <span 
+                                  <span
                                     className={`inline-block w-full py-1 rounded ${getJudgmentColor(jk)}`}
                                   >
                                     {jk}
@@ -635,15 +635,15 @@ const ExamsDetail = () => {
                               </td>
                             )}
                             {shouldShowJudgmentNiji && (
-                              <td 
+                              <td
                                 className="px-1 py-4 text-sm text-center"
-                                style={{ 
+                                style={{
                                   whiteSpace: "nowrap",
                                   borderRight: "1px solid #d0dce5"
                                 }}
                               >
                                 {jn ? (
-                                  <span 
+                                  <span
                                     className={`inline-block w-full py-1 rounded ${getJudgmentColor(jn)}`}
                                   >
                                     {jn}
@@ -663,11 +663,11 @@ const ExamsDetail = () => {
             </div>
           </div>
         ) : (
-          <div 
+          <div
             className="rounded-lg p-12 text-center"
-            style={{ 
-              backgroundColor: "#ffffff", 
-              boxShadow: "0 1px 3px rgba(0, 101, 128, 0.08)" 
+            style={{
+              backgroundColor: "#ffffff",
+              boxShadow: "0 1px 3px rgba(0, 101, 128, 0.08)"
             }}
           >
             <p className="text-sm" style={{ color: "#666e7e" }}>

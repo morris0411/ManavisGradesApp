@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { fetchStudents } from "../../api/students";
-import { Breadcrumb } from "../../components/Breadcrumb";
+import { Breadcrumb } from "@/components/layout/Breadcrumb";
 import { Search, Filter } from 'lucide-react';
 
 const StudentSearch = () => {

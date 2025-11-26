@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { getAcademicYearStatus, updateAcademicYear } from "../../api/imports";
-import { Breadcrumb } from "../../components/Breadcrumb";
+import { Breadcrumb } from "@/components/layout/Breadcrumb";
 
 export default function AcademicYearUpdate() {
   const [loading, setLoading] = useState(false);
@@ -168,9 +168,8 @@ export default function AcademicYearUpdate() {
 
           {message && (
             <p
-              className={`mt-4 text-sm ${
-                message.includes("完了") ? "text-green-600" : "text-red-600"
-              }`}
+              className={`mt-4 text-sm ${message.includes("完了") ? "text-green-600" : "text-red-600"
+                }`}
             >
               {message}
             </p>

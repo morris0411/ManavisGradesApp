@@ -3,8 +3,8 @@
 import React from "react"
 import { Link, useLocation, useParams, useNavigate } from "react-router-dom"
 import { ChevronRight } from "lucide-react"
-import logoutIcon from "../assets/logout-icon.svg"
-import homeIcon from "../assets/home-icon.svg"
+import logoutIcon from "@/assets/logout-icon.svg"
+import homeIcon from "@/assets/home-icon.svg"
 
 type BreadcrumbItem = {
   label: string
@@ -42,7 +42,7 @@ export function Breadcrumb(props: BreadcrumbProps) {
         {items.map((item, index) => {
           const isLast = index === items.length - 1
           const isHome = item.label === "ホーム"
-          
+
           return (
             <React.Fragment key={index}>
               {item.path && !isLast ? (
@@ -52,9 +52,9 @@ export function Breadcrumb(props: BreadcrumbProps) {
                   className="flex items-center text-[#0086A9] hover:text-[#1BA4C3] transition-colors"
                 >
                   {isHome ? (
-                    <img 
-                      src={homeIcon as string} 
-                      alt="ホーム" 
+                    <img
+                      src={homeIcon as string}
+                      alt="ホーム"
                       className="w-5 h-5]"
                       style={{ filter: "none", objectFit: "contain", display: "block" }}
                     />
@@ -66,9 +66,9 @@ export function Breadcrumb(props: BreadcrumbProps) {
                 // 最後の要素はダークトーンで強調し、それ以外はミディアムトーンで統一
                 <span className={`flex items-center ${isLast ? "text-[#006580] font-semibold" : "text-[#0086A9]"}`}>
                   {isHome ? (
-                    <img 
-                      src={homeIcon as string} 
-                      alt="ホーム" 
+                    <img
+                      src={homeIcon as string}
+                      alt="ホーム"
                       className="w-5 h-5"
                       style={{ filter: "none", objectFit: "contain", display: "block" }}
                     />
@@ -99,9 +99,9 @@ export function Breadcrumb(props: BreadcrumbProps) {
           style={{ color: "#006580" }}
           title="ログアウト"
         >
-          <img 
-            src={logoutIcon as string} 
-            alt="ログアウト" 
+          <img
+            src={logoutIcon as string}
+            alt="ログアウト"
             className="w-6 h-6"
             style={{ filter: "none" }}
           />

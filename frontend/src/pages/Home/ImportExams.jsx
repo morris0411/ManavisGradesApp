@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { uploadExamsXlsx } from "../../api/imports";
-import { Breadcrumb } from "../../components/Breadcrumb";
+import { Breadcrumb } from "@/components/layout/Breadcrumb";
 
 export default function ImportExams() {
   const [file, setFile] = useState(null);

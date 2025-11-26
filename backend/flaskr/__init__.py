@@ -35,16 +35,19 @@ def create_app():
     CORS(app, supports_credentials=True, allow_headers=["Content-Type", "Authorization"])
     
     # --- Blueprint登録 ---
-    from .route import bp
     from .routes.students import students_bp
     from .routes.exams import exams_bp
     from .routes.imports import imports_bp
     from .routes.auth import auth_bp
 
-    app.register_blueprint(bp)
     app.register_blueprint(students_bp, url_prefix="/api")
     app.register_blueprint(exams_bp, url_prefix="/api")
     app.register_blueprint(imports_bp, url_prefix="/api")
     app.register_blueprint(auth_bp, url_prefix="/api")
+    
+    # 開発環境でのみseedエンドポイントを有効化
+    if os.getenv("FLASK_ENV") == "development" or os.getenv("ENABLE_SEED") == "true":
+        from .routes.seed import seed_bp
+        app.register_blueprint(seed_bp, url_prefix="/api")
     
     return app

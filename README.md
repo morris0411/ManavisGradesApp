@@ -267,16 +267,22 @@ ManavisGradesApp/
 │   │   │   ├── students.py
 │   │   │   ├── exams.py
 │   │   │   └── imports.py
+│   │   │   └── seed.py  # 開発環境でのみ有効
 │   │   ├── services/
+│   │   │   ├── academic_year_service.py
 │   │   │   ├── exam_service.py
+│   │   │   ├── import_service.py
 │   │   │   └── students_service.py
 │   │   ├── models.py
-│   │   ├── route.py
 │   │   └── __init__.py
 │   ├── migrations/
 │   │   ├── versions/
 │   │   ├── alembic.ini
 │   │   └── env.py
+│   ├── data/
+│   │   ├── subject_master.csv
+│   │   └── test_data/
+│   │       └── テスト用.xlsx
 │   ├── gunicorn_config.py
 │   ├── wsgi.py
 │   ├── build.sh
@@ -290,10 +296,17 @@ ManavisGradesApp/
     │   │   ├── imports.jsx
     │   │   └── students.jsx
     │   ├── components/
-    │   │   ├── Breadcrumb.tsx
-    │   │   ├── dashboard.tsx
-    │   │   ├── header.tsx
-    │   │   └── ...
+    │   │   ├── features/
+    │   │   │   ├── dashboard/
+    │   │   │   │   ├── tabs/
+    │   │   │   │   └── dashboard.tsx
+    │   │   │   └── university/
+    │   │   │       └── university-judgment.tsx
+    │   │   ├── layout/
+    │   │   │   ├── Breadcrumb.tsx
+    │   │   │   └── header.tsx
+    │   │   ├── shared/
+    │   │   └── ui/
     │   ├── pages/
     │   │   ├── Auth/
     │   │   ├── Exams/
@@ -305,6 +318,7 @@ ManavisGradesApp/
     ├── public/
     ├── package.json
     ├── vite.config.js
+    ├── jsconfig.json
     └── eslint.config.js
 ```
 
