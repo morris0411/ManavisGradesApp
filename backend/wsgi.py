@@ -1,3 +1,5 @@
+# Web Server Gateway Interface
+
 from flaskr import create_app
 app = create_app()
 
