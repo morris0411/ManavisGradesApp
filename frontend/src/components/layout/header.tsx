@@ -1,7 +1,7 @@
 "use client"
 
 import React from "react"
-import { Card, CardContent } from "./ui/card"
+import { Card, CardContent } from "@/components/ui/card"
 
 type HeaderProps = {
   studentId?: number | string
@@ -54,9 +54,9 @@ export function StudentPerformanceHeader(props: HeaderProps) {
         <div className="container mx-auto px-4 py-6">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Profile Information Card */}
-            <Card 
+            <Card
               className="lg:col-span-1 border"
-              style={{ 
+              style={{
                 backgroundColor: "#ffffff",
                 borderColor: "#e5eef3",
                 boxShadow: "0 1px 3px rgba(0, 101, 128, 0.08)"
@@ -65,13 +65,13 @@ export function StudentPerformanceHeader(props: HeaderProps) {
               <CardContent className="pt-0">
                 <div className="space-y-2">
                   <div>
-                    <p 
+                    <p
                       className="text-xs font-semibold uppercase tracking-wider mb-1"
                       style={{ color: "#0086A9" }}
                     >
                       学年
                     </p>
-                    <p 
+                    <p
                       className="text-lg font-semibold"
                       style={{ color: "#333" }}
                     >
@@ -79,13 +79,13 @@ export function StudentPerformanceHeader(props: HeaderProps) {
                     </p>
                   </div>
                   <div>
-                    <p 
+                    <p
                       className="text-xs font-semibold uppercase tracking-wider mb-1"
                       style={{ color: "#0086A9" }}
                     >
                       高校名
                     </p>
-                    <p 
+                    <p
                       className="text-lg font-semibold"
                       style={{ color: "#333" }}
                     >
@@ -93,13 +93,13 @@ export function StudentPerformanceHeader(props: HeaderProps) {
                     </p>
                   </div>
                   <div>
-                    <p 
+                    <p
                       className="text-xs font-semibold uppercase tracking-wider mb-1"
                       style={{ color: "#0086A9" }}
                     >
                       入会日
                     </p>
-                    <p 
+                    <p
                       className="text-lg font-semibold"
                       style={{ color: "#333" }}
                     >
@@ -107,13 +107,13 @@ export function StudentPerformanceHeader(props: HeaderProps) {
                     </p>
                   </div>
                   <div>
-                    <p 
+                    <p
                       className="text-xs font-semibold uppercase tracking-wider mb-1"
                       style={{ color: "#0086A9" }}
                     >
                       ステータス
                     </p>
-                    <p 
+                    <p
                       className="text-lg font-semibold"
                       style={{ color: "#333" }}
                     >
@@ -127,33 +127,33 @@ export function StudentPerformanceHeader(props: HeaderProps) {
             {/* Latest Summary Cards */}
             <div className="lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Wish University Card */}
-              <Card 
+              <Card
                 className="border-none"
-                style={{ 
+                style={{
                   background: "linear-gradient(135deg, #1BA4C3 0%, #0086A9 50%, #006580 100%)",
                   boxShadow: "0 4px 12px rgba(0, 101, 128, 0.2)"
                 }}
               >
                 <CardContent className="pt-2 pb-2">
-                  <p 
+                  <p
                     className="text-lg font-semibold uppercase tracking-wider mb-4"
                     style={{ color: "rgba(255, 255, 255, 0.9)" }}
                   >
                     第一志望
                   </p>
-                  <p 
+                  <p
                     className="text-4xl font-bold leading-tight mb-2"
                     style={{ color: "#ffffff" }}
                   >
                     {latestUniversity ?? "-"}
                   </p>
-                  <p 
+                  <p
                     className="text-xl font-semibold opacity-90 mt-3"
                     style={{ color: "#ffffff" }}
                   >
                     {latestFaculty ?? "-"}
                   </p>
-                  <p 
+                  <p
                     className="text-xl font-semibold opacity-90"
                     style={{ color: "#ffffff" }}
                   >
@@ -163,18 +163,18 @@ export function StudentPerformanceHeader(props: HeaderProps) {
               </Card>
 
               {/* Latest Judgment Card */}
-              <Card 
+              <Card
                 className="border"
-                style={{ 
+                style={{
                   backgroundColor: "#ffffff",
                   borderColor: "#e5eef3",
                   boxShadow: "0 1px 3px rgba(0, 101, 128, 0.08)"
                 }}
               >
                 <CardContent className="pt-2 pb-2">
-                  <p 
+                  <p
                     className="text-xm font-semibold uppercase tracking-wider mb-6"
-                    style={{ 
+                    style={{
                       background: "linear-gradient(135deg, #1BA4C3 0%, #0086A9 50%, #006580 100%)",
                       WebkitBackgroundClip: "text",
                       WebkitTextFillColor: "transparent",
@@ -185,13 +185,13 @@ export function StudentPerformanceHeader(props: HeaderProps) {
                   </p>
                   <div className="flex gap-6">
                     <div className="flex-1">
-                      <p 
+                      <p
                         className="text-sm font-semibold mb-2"
                         style={{ color: "#666e7e" }}
                       >
                         共テ判定
                       </p>
-                      <p 
+                      <p
                         className="text-4xl font-bold"
                         style={{ color: "#006580" }}
                       >
@@ -199,13 +199,13 @@ export function StudentPerformanceHeader(props: HeaderProps) {
                       </p>
                     </div>
                     <div className="flex-1">
-                      <p 
+                      <p
                         className="text-sm font-semibold mb-2"
                         style={{ color: "#666e7e" }}
                       >
                         2次判定
                       </p>
-                      <p 
+                      <p
                         className="text-4xl font-bold"
                         style={{ color: "#006580" }}
                       >
@@ -213,13 +213,13 @@ export function StudentPerformanceHeader(props: HeaderProps) {
                       </p>
                     </div>
                     <div className="flex-1">
-                      <p 
+                      <p
                         className="text-sm font-semibold mb-2"
                         style={{ color: "#666e7e" }}
                       >
                         総合判定
                       </p>
-                      <p 
+                      <p
                         className="text-4xl font-bold"
                         style={{ color: "#006580" }}
                       >
@@ -227,9 +227,9 @@ export function StudentPerformanceHeader(props: HeaderProps) {
                       </p>
                     </div>
                   </div>
-                  <p 
+                  <p
                     className="text-base font-medium mt-6 pt-4"
-                    style={{ 
+                    style={{
                       color: "#666e7e",
                       borderTop: "1px solid #e5eef3"
                     }}

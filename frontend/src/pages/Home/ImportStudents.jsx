@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { uploadStudentsCsv } from "../../api/imports";
-import { Breadcrumb } from "../../components/Breadcrumb";
+import { Breadcrumb } from "@/components/layout/Breadcrumb";
 
 export default function ImportStudents() {
   const [file, setFile] = useState(null);

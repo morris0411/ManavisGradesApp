@@ -1,10 +1,10 @@
 "use client"
 
 import React, { useMemo, useState } from "react"
-import { normalizeSubjectName, getFullScoreForCommonTest } from "../utils/subject-utils"
-import { collectSubjectsWithCode, createSubjectCodeMap, getDefaultCheckedSubjects } from "../utils/exam-data-utils"
-import { ExamChartWithTabs } from "./shared/exam-chart"
-import { ExamTables } from "./shared/exam-tables"
+import { normalizeSubjectName, getFullScoreForCommonTest } from "@/utils/subject-utils"
+import { collectSubjectsWithCode, createSubjectCodeMap, getDefaultCheckedSubjects } from "@/utils/exam-data-utils"
+import { ExamChartWithTabs } from "@/components/shared/exam-chart"
+import { ExamTables } from "@/components/shared/exam-tables"
 
 type CommonTestTabProps = { exams?: Array<any> }
 
@@ -72,7 +72,7 @@ export function CommonTestTab(props: CommonTestTabProps) {
       const row: any = { name: ex.exam_name || "" }
       const scoreByCanon: Record<string, number | undefined> = {}
       const originalScoreByCanon: Record<string, number | undefined> = {}
-      
+
       for (const sc of scores) {
         const canon = normalizeSubjectName(sc.subject_name)
         if (!canon) continue
@@ -90,7 +90,7 @@ export function CommonTestTab(props: CommonTestTabProps) {
         }
       }
       // チェックされた科目のみを含める（得点率）
-      visibleSubjects.forEach((subj) => { 
+      visibleSubjects.forEach((subj) => {
         row[subj] = scoreByCanon[subj]
         // 元の得点も保存（ツールチップ用）
         row[`${subj}_original`] = originalScoreByCanon[subj]
@@ -101,7 +101,7 @@ export function CommonTestTab(props: CommonTestTabProps) {
 
   const scoreRows = useMemo(() => {
     return kyoteExams.map((ex: any) => {
-      const row: any = { 
+      const row: any = {
         name: ex.exam_name || "",
         exam_year: ex.exam_year || null
       }
@@ -118,7 +118,10 @@ export function CommonTestTab(props: CommonTestTabProps) {
     })
   }, [kyoteExams, presentSubjects])
 
-  const [selectedExam, setSelectedExam] = useState<string>(() => (kyoteExams.at(-1)?.exam_name || kyoteExams[0]?.exam_name || ""))
+  const [selectedExam, setSelectedExam] = useState<string>(() => {
+    const lastExam = kyoteExams.length > 0 ? kyoteExams[kyoteExams.length - 1] : null;
+    return lastExam?.exam_name || kyoteExams[0]?.exam_name || "";
+  })
   const selectedExamObj = kyoteExams.find((ex: any) => ex.exam_name === selectedExam) || kyoteExams[0]
   const currentJudgmentData = useMemo(() => {
     const js = Array.isArray(selectedExamObj?.judgements) ? selectedExamObj.judgements : []

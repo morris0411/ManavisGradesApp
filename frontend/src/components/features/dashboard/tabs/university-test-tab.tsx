@@ -1,10 +1,10 @@
 "use client"
 
 import React, { useMemo, useState } from "react"
-import { normalizeSubjectName } from "../utils/subject-utils"
-import { collectSubjectsWithCode, createSubjectCodeMap, getDefaultCheckedSubjects } from "../utils/exam-data-utils"
-import { ExamChartWithTabs } from "./shared/exam-chart"
-import { ExamTables } from "./shared/exam-tables"
+import { normalizeSubjectName, getFullScoreForCommonTest } from "@/utils/subject-utils"
+import { collectSubjectsWithCode, createSubjectCodeMap, getDefaultCheckedSubjects } from "@/utils/exam-data-utils"
+import { ExamChartWithTabs } from "@/components/shared/exam-chart"
+import { ExamTables } from "@/components/shared/exam-tables"
 
 type UniversityTestTabProps = { exams?: Array<any> }
 
@@ -104,7 +104,10 @@ export function UniversityTestTab(props: UniversityTestTabProps) {
     })
   }, [opExams, presentSubjects])
 
-  const [selectedExam, setSelectedExam] = useState<string>(() => (opExams.at(-1)?.exam_name || opExams[0]?.exam_name || ""))
+  const [selectedExam, setSelectedExam] = useState<string>(() => {
+    const lastExam = opExams.length > 0 ? opExams[opExams.length - 1] : null;
+    return lastExam?.exam_name || opExams[0]?.exam_name || "";
+  })
   const selectedExamObj = opExams.find((ex: any) => ex.exam_name === selectedExam) || opExams[0]
   const currentJudgmentData = useMemo(() => {
     const js = Array.isArray(selectedExamObj?.judgements) ? selectedExamObj.judgements : []

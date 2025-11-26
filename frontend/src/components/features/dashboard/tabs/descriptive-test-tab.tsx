@@ -1,23 +1,23 @@
 "use client"
 
 import React, { useMemo, useState } from "react"
-import { normalizeSubjectName } from "../utils/subject-utils"
-import { collectSubjectsWithCode, createSubjectCodeMap, getDefaultCheckedSubjects } from "../utils/exam-data-utils"
-import { ExamChartWithTabs } from "./shared/exam-chart"
-import { ExamTables } from "./shared/exam-tables"
+import { normalizeSubjectName, getFullScoreForCommonTest } from "@/utils/subject-utils"
+import { collectSubjectsWithCode, createSubjectCodeMap, getDefaultCheckedSubjects } from "@/utils/exam-data-utils"
+import { ExamChartWithTabs } from "@/components/shared/exam-chart"
+import { ExamTables } from "@/components/shared/exam-tables"
 
-type High1High2TestTabProps = { exams?: Array<any> }
+type DescriptiveTabProps = { exams?: Array<any> }
 
-export function High1High2TestTab(props: High1High2TestTabProps) {
+export function DescriptiveTestTab(props: DescriptiveTabProps) {
   const { exams = [] } = props
-  const high1High2Exams = useMemo(() => {
-    return (exams || []).filter((ex: any) => (ex.exam_type || "").includes("高1/高2"))
+  const descExams = useMemo(() => {
+    return (exams || []).filter((ex: any) => (ex.exam_type || "").includes("記述"))
   }, [exams])
 
   // その生徒が実際に受験した科目をすべて収集（科目コードでソート）
   const presentSubjectsWithCode = useMemo(() => {
-    return collectSubjectsWithCode(high1High2Exams)
-  }, [high1High2Exams])
+    return collectSubjectsWithCode(descExams)
+  }, [descExams])
 
   // 非表示にする科目コード
   const hiddenSubjectCodes = new Set([2580, 2920, 2930, 3120, 3220, 3320, 3210, 3110])
@@ -47,27 +47,27 @@ export function High1High2TestTab(props: High1High2TestTabProps) {
 
   // 偏差値推移用のデータ
   const deviationChartData = useMemo(() => {
-    return high1High2Exams.map((ex: any) => {
+    return descExams.map((ex: any) => {
       const scores = Array.isArray(ex.scores) ? ex.scores : []
       const row: any = { name: ex.exam_name || "" }
-      const devByCanon: Record<string, number | undefined> = {}
+      const devBy: Record<string, number | undefined> = {}
       for (const sc of scores) {
         const canon = normalizeSubjectName(sc.subject_name)
         if (!canon) continue
-        if (typeof sc.deviation_value !== "undefined" && sc.deviation_value !== null) {
+        if (sc.deviation_value != null) {
           const v = Number(sc.deviation_value)
-          if (!Number.isNaN(v)) devByCanon[canon] = v
+          if (!Number.isNaN(v)) devBy[canon] = v
         }
       }
       // チェックされた科目のみを含める
-      visibleSubjects.forEach((subj) => { row[subj] = devByCanon[subj] })
+      visibleSubjects.forEach((subj) => { row[subj] = devBy[subj] })
       return row
     })
-  }, [high1High2Exams, visibleSubjects])
+  }, [descExams, visibleSubjects])
 
   // 得点推移用のデータ
   const scoreChartData = useMemo(() => {
-    return high1High2Exams.map((ex: any) => {
+    return descExams.map((ex: any) => {
       const scores = Array.isArray(ex.scores) ? ex.scores : []
       const row: any = { name: ex.exam_name || "" }
       const scoreByCanon: Record<string, number | undefined> = {}
@@ -83,29 +83,30 @@ export function High1High2TestTab(props: High1High2TestTabProps) {
       visibleSubjects.forEach((subj) => { row[subj] = scoreByCanon[subj] })
       return row
     })
-  }, [high1High2Exams, visibleSubjects])
+  }, [descExams, visibleSubjects])
 
   const scoreRows = useMemo(() => {
-    return high1High2Exams.map((ex: any) => {
+    return descExams.map((ex: any) => {
       const row: any = {
         name: ex.exam_name || "",
         exam_year: ex.exam_year || null
       }
-      const scoreByCanon: Record<string, string | number> = {}
+      const scoreBy: Record<string, string | number> = {}
       for (const sc of (ex.scores || [])) {
         const canon = normalizeSubjectName(sc.subject_name)
         if (!canon) continue
-        if (typeof sc.score !== "undefined" && sc.score !== null) {
-          scoreByCanon[canon] = sc.score
-        }
+        if (sc.score != null) scoreBy[canon] = sc.score
       }
-      presentSubjects.forEach((subj) => { row[subj] = scoreByCanon[subj] ?? "" })
+      presentSubjects.forEach((subj) => { row[subj] = scoreBy[subj] ?? "" })
       return row
     })
-  }, [high1High2Exams, presentSubjects])
+  }, [descExams, presentSubjects])
 
-  const [selectedExam, setSelectedExam] = useState<string>(() => (high1High2Exams.at(-1)?.exam_name || high1High2Exams[0]?.exam_name || ""))
-  const selectedExamObj = high1High2Exams.find((ex: any) => ex.exam_name === selectedExam) || high1High2Exams[0]
+  const [selectedExam, setSelectedExam] = useState<string>(() => {
+    const lastExam = descExams.length > 0 ? descExams[descExams.length - 1] : null;
+    return lastExam?.exam_name || descExams[0]?.exam_name || "";
+  })
+  const selectedExamObj = descExams.find((ex: any) => ex.exam_name === selectedExam) || descExams[0]
   const currentJudgmentData = useMemo(() => {
     const js = Array.isArray(selectedExamObj?.judgements) ? selectedExamObj.judgements : []
     const sorted = [...js].sort((a: any, b: any) => (a.preference_order || 999) - (b.preference_order || 999))
@@ -160,7 +161,7 @@ export function High1High2TestTab(props: High1High2TestTabProps) {
         presentSubjects={presentSubjects}
         checkedSubjects={checkedSubjects}
         subjectCodeMapFromPresent={subjectCodeMapFromPresent}
-        exams={high1High2Exams}
+        exams={descExams}
         selectedExam={selectedExam}
         onExamChange={setSelectedExam}
         currentJudgmentData={currentJudgmentData}

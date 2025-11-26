@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { fetchYears, fetchTypes, fetchNames, searchExams } from "../../api/exams";
-import { Breadcrumb } from "../../components/Breadcrumb";
+import { Breadcrumb } from "@/components/layout/Breadcrumb";
 
 const ExamsSearch = () => {
   const [years, setYears] = useState([]);
@@ -60,9 +60,9 @@ const ExamsSearch = () => {
       <div className="max-w-6xl mx-auto px-6 py-8">
         {/* Title Section */}
         <div className="mb-8">
-          <h1 
+          <h1
             className="text-3xl font-bold mb-2"
-            style={{ 
+            style={{
               background: "linear-gradient(135deg, #1BA4C3 0%, #0086A9 50%, #006580 100%)",
               WebkitBackgroundClip: "text",
               WebkitTextFillColor: "transparent",
@@ -77,24 +77,24 @@ const ExamsSearch = () => {
         </div>
 
         {/* Search Card */}
-        <div 
-          className="rounded-lg p-6 mb-8" 
-          style={{ 
-            backgroundColor: "#ffffff", 
-            boxShadow: "0 1px 3px rgba(0, 101, 128, 0.08)" 
+        <div
+          className="rounded-lg p-6 mb-8"
+          style={{
+            backgroundColor: "#ffffff",
+            boxShadow: "0 1px 3px rgba(0, 101, 128, 0.08)"
           }}
         >
           <div className="flex gap-4 items-end flex-wrap">
             <div className="flex-1 min-w-[200px]">
-              <label 
+              <label
                 className="block mb-2 text-sm font-medium"
                 style={{ color: "#006580" }}
               >
                 年度
               </label>
-              <select 
-                value={year} 
-                onChange={(e) => setYear(e.target.value)} 
+              <select
+                value={year}
+                onChange={(e) => setYear(e.target.value)}
                 className="w-full px-4 py-2.5 rounded-md text-sm border transition"
                 style={{
                   borderColor: "#d0dce5",
@@ -110,15 +110,15 @@ const ExamsSearch = () => {
             </div>
 
             <div className="flex-1 min-w-[200px]">
-              <label 
+              <label
                 className="block mb-2 text-sm font-medium"
                 style={{ color: "#006580" }}
               >
                 模試タイプ
               </label>
-              <select 
-                value={examType} 
-                onChange={(e) => setExamType(e.target.value)} 
+              <select
+                value={examType}
+                onChange={(e) => setExamType(e.target.value)}
                 className="w-full px-4 py-2.5 rounded-md text-sm border transition"
                 style={{
                   borderColor: "#d0dce5",
@@ -134,15 +134,15 @@ const ExamsSearch = () => {
             </div>
 
             <div className="flex-1 min-w-[200px]">
-              <label 
+              <label
                 className="block mb-2 text-sm font-medium"
                 style={{ color: "#006580" }}
               >
                 模試名
               </label>
-              <select 
-                value={name} 
-                onChange={(e) => setName(e.target.value)} 
+              <select
+                value={name}
+                onChange={(e) => setName(e.target.value)}
                 className="w-full px-4 py-2.5 rounded-md text-sm border transition"
                 style={{
                   borderColor: "#d0dce5",
@@ -157,8 +157,8 @@ const ExamsSearch = () => {
               </select>
             </div>
 
-            <button 
-              onClick={doSearch} 
+            <button
+              onClick={doSearch}
               className="px-6 py-2.5 rounded-md font-medium text-white text-sm transition hover:shadow-lg"
               style={{
                 backgroundColor: "#1BA4C3"
@@ -173,18 +173,18 @@ const ExamsSearch = () => {
 
         {/* Results Section */}
         {rows.length > 0 && (
-          <div 
-            className="rounded-lg overflow-hidden" 
-            style={{ 
-              backgroundColor: "#ffffff", 
-              boxShadow: "0 1px 3px rgba(0, 101, 128, 0.08)" 
+          <div
+            className="rounded-lg overflow-hidden"
+            style={{
+              backgroundColor: "#ffffff",
+              boxShadow: "0 1px 3px rgba(0, 101, 128, 0.08)"
             }}
           >
-            <div 
-              className="px-6 py-4" 
-              style={{ 
-                backgroundColor: "#006580", 
-                borderBottom: "1px solid #e5eef3" 
+            <div
+              className="px-6 py-4"
+              style={{
+                backgroundColor: "#006580",
+                borderBottom: "1px solid #e5eef3"
               }}
             >
               <p className="text-sm font-medium text-white">
@@ -194,29 +194,29 @@ const ExamsSearch = () => {
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
-                  <tr style={{ 
-                    backgroundColor: "#f0f5f9", 
-                    borderBottom: "2px solid #d0dce5" 
+                  <tr style={{
+                    backgroundColor: "#f0f5f9",
+                    borderBottom: "2px solid #d0dce5"
                   }}>
-                    <th 
+                    <th
                       className="px-6 py-3 text-left text-xs font-semibold"
                       style={{ color: "#006580" }}
                     >
                       年度
                     </th>
-                    <th 
+                    <th
                       className="px-6 py-3 text-left text-xs font-semibold"
                       style={{ color: "#006580" }}
                     >
                       模試名
                     </th>
-                    <th 
+                    <th
                       className="px-6 py-3 text-left text-xs font-semibold"
                       style={{ color: "#006580" }}
                     >
                       タイプ
                     </th>
-                    <th 
+                    <th
                       className="px-6 py-3 text-left text-xs font-semibold"
                       style={{ color: "#006580" }}
                     >
@@ -234,13 +234,13 @@ const ExamsSearch = () => {
                       }}
                       className="hover:bg-blue-50 transition"
                     >
-                      <td 
+                      <td
                         className="px-6 py-4 text-sm"
                         style={{ color: "#333" }}
                       >
                         {r.exam_year}
                       </td>
-                      <td 
+                      <td
                         className="px-6 py-4 text-sm"
                       >
                         <Link
@@ -253,13 +253,13 @@ const ExamsSearch = () => {
                           {r.exam_name}
                         </Link>
                       </td>
-                      <td 
+                      <td
                         className="px-6 py-4 text-sm"
                         style={{ color: "#666e7e" }}
                       >
                         {r.exam_type}
                       </td>
-                      <td 
+                      <td
                         className="px-6 py-4 text-sm"
                         style={{ color: "#333" }}
                       >
@@ -277,9 +277,9 @@ const ExamsSearch = () => {
         {rows.length === 0 && (
           <div
             className="rounded-lg p-12 text-center"
-            style={{ 
-              backgroundColor: "#ffffff", 
-              boxShadow: "0 1px 3px rgba(0, 101, 128, 0.08)" 
+            style={{
+              backgroundColor: "#ffffff",
+              boxShadow: "0 1px 3px rgba(0, 101, 128, 0.08)"
             }}
           >
             <p className="text-sm" style={{ color: "#666e7e" }}>
