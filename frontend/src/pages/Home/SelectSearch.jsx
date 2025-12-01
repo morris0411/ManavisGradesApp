@@ -1,8 +1,10 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { Breadcrumb } from "@/components/layout/Breadcrumb";
+import { useAuth } from "../../hooks/useAuth";
 
 const SelectSearch = () => {
+  const { isAdmin, loading } = useAuth();
   return (
     <div className="min-h-screen" style={{ backgroundColor: "#f8fafb" }}>
       {/* Header */}
@@ -124,6 +126,37 @@ const SelectSearch = () => {
               </Link>
             </div>
           </div>
+
+          {/* Admin Cards - 管理者のみ表示 */}
+          {!loading && isAdmin && (
+            <div
+              className="rounded-lg p-6"
+              style={{
+                backgroundColor: "#ffffff",
+                boxShadow: "0 1px 3px rgba(0, 101, 128, 0.08)"
+              }}
+            >
+              <h3
+                className="text-xl font-bold mb-4"
+                style={{ color: "#006580" }}
+              >
+                ユーザー管理
+              </h3>
+              <div className="space-y-3">
+                <Link
+                  to="/admin/register"
+                  className="block w-full px-6 py-3 text-white no-underline rounded-md font-medium text-center transition hover:shadow-lg"
+                  style={{
+                    backgroundColor: "#9333ea"
+                  }}
+                  onMouseEnter={(e) => e.target.style.backgroundColor = "#7e22ce"}
+                  onMouseLeave={(e) => e.target.style.backgroundColor = "#9333ea"}
+                >
+                  新規ユーザー登録
+                </Link>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>

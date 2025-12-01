@@ -9,7 +9,8 @@ import ImportStudents from "../pages/Home/ImportStudents.jsx";
 import ImportExams from "../pages/Home/ImportExams.jsx";
 import AcademicYearUpdate from "../pages/Home/AcademicYearUpdate.jsx";
 import Login from "../pages/Auth/Login.jsx";
-import Register from "../pages/Auth/Register.jsx";
+import RegisterUser from "../pages/Admin/RegisterUser.jsx";
+import { useAuth } from "../hooks/useAuth";
 
 // 認証が必要なルートを保護するコンポーネント
 function PrivateRoute({ children }) {
@@ -17,11 +18,30 @@ function PrivateRoute({ children }) {
   return token ? children : <Navigate to="/login" replace />;
 }
 
+// 管理者のみアクセス可能なルートを保護するコンポーネント
+function AdminRoute({ children }) {
+  const token = localStorage.getItem("access_token");
+  const { isAdmin, loading } = useAuth();
+  
+  if (!token) {
+    return <Navigate to="/login" replace />;
+  }
+  
+  if (loading) {
+    return <div>読み込み中...</div>;
+  }
+  
+  if (!isAdmin) {
+    return <Navigate to="/" replace />;
+  }
+  
+  return children;
+}
+
 export function AppRoutes() {
   return (
     <Routes>
       <Route path="/login" element={<Login />} />
-      <Route path="/register" element={<Register />} />
       <Route 
         path="/" 
         element={
@@ -84,6 +104,14 @@ export function AppRoutes() {
           <PrivateRoute>
             <ExamsDetail />
           </PrivateRoute>
+        } 
+      />
+      <Route 
+        path="/admin/register" 
+        element={
+          <AdminRoute>
+            <RegisterUser />
+          </AdminRoute>
         } 
       />
     </Routes>

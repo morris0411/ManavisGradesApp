@@ -154,11 +154,11 @@ erDiagram
         int user_id PK
         string login_id UK
         string password_hash
+        boolean is_admin
     }
 
-    SystemSettings {
-        string setting_key PK
-        string setting_value
+    AcademicYearUpdate {
+        int academic_year PK
         datetime updated_at
     }
 ```
@@ -226,11 +226,12 @@ erDiagram
 - システム利用者の認証情報を管理
 - `login_id`: ログインID（ユニーク）
 - `password_hash`: ハッシュ化されたパスワード
+- `is_admin`: 管理者フラグ
 
-**system_settings（システム設定）**
-- システム全体の設定を管理
-- `setting_key`: 設定キー（主キー）
-- `setting_value`: 設定値
+**academic_year_updates（年度更新履歴）**
+- 年度更新の実行履歴を管理
+- `academic_year`: 更新された年度（主キー）
+- `updated_at`: 更新日時
 
 ### 主要なリレーション
 
