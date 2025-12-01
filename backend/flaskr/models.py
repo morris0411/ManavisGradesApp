@@ -113,6 +113,7 @@ class Users(db.Model):
     user_id = db.Column(db.Integer, primary_key=True)
     login_id = db.Column(db.String, nullable=False, unique=True)
     password_hash = db.Column(db.String, nullable=False)
+    is_admin = db.Column(db.Boolean, nullable=False, default=False)
 
 
 class SystemSettings(db.Model):

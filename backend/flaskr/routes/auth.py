@@ -42,8 +42,17 @@ def login():
 
 
 @auth_bp.route("/auth/register", methods=["POST"])
+@jwt_required()
 def register():
-    """ユーザー登録エンドポイント（必要に応じて使用）"""
+    """ユーザー登録エンドポイント（管理者のみ）"""
+    # 現在のユーザーを取得
+    user_id = get_jwt_identity()
+    current_user = Users.query.get(user_id)
+    
+    # 管理者チェック
+    if not current_user or not current_user.is_admin:
+        return jsonify({"error": "管理者権限が必要です"}), 403
+    
     data = request.get_json()
     
     if not data:
@@ -63,8 +72,8 @@ def register():
     # パスワードをハッシュ化
     password_hash = generate_password_hash(password)
     
-    # 新しいユーザーを作成
-    new_user = Users(login_id=login_id, password_hash=password_hash)
+    # 新しいユーザーを作成（通常ユーザーとして作成）
+    new_user = Users(login_id=login_id, password_hash=password_hash, is_admin=False)
     db.session.add(new_user)
     db.session.commit()
     
@@ -87,7 +96,8 @@ def get_current_user():
     
     return jsonify({
         "user_id": user.user_id,
-        "login_id": user.login_id
+        "login_id": user.login_id,
+        "is_admin": user.is_admin
     }), 200
 
 
