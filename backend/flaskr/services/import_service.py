@@ -608,7 +608,7 @@ def seed_exam_master_data():
     db.session.commit()
     return ExamMaster.query.count()
 
-def seed_subject_master_data():
+def seed_subject_master_data(file: FileStorage):
     result = {"subjects": 0, "read_from_file": 0, "existing": 0, "new": 0, "skipped": 0}
 
     # --- 科目マスタの取り込み ---
