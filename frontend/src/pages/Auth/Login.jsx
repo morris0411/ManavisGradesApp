@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { login } from "../../api/auth";
 
 export default function Login() {
@@ -187,19 +187,6 @@ export default function Login() {
             {loading ? "ログイン中..." : "ログイン"}
           </button>
         </form>
-
-        <div className="mt-6 text-center">
-          <p className="text-sm" style={{ color: "#666e7e" }}>
-            アカウントをお持ちでない方は{" "}
-            <Link 
-              to="/register"
-              className="font-medium"
-              style={{ color: "#1BA4C3" }}
-            >
-              新規登録
-            </Link>
-          </p>
-        </div>
       </div>
     </div>
   );
