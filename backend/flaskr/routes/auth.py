@@ -31,8 +31,8 @@ def login():
     if not check_password_hash(user.password_hash, password):
         return jsonify({"error": "ログインIDまたはパスワードが正しくありません"}), 401
     
-    # JWTトークンを生成
-    access_token = create_access_token(identity=user.user_id)
+    # JWTトークンを生成（identityは文字列である必要がある）
+    access_token = create_access_token(identity=str(user.user_id))
     
     return jsonify({
         "access_token": access_token,
@@ -45,8 +45,8 @@ def login():
 @jwt_required()
 def register():
     """ユーザー登録エンドポイント（管理者のみ）"""
-    # 現在のユーザーを取得
-    user_id = get_jwt_identity()
+    # 現在のユーザーを取得（identityは文字列として返されるため、整数に変換）
+    user_id = int(get_jwt_identity())
     current_user = Users.query.get(user_id)
     
     # 管理者チェック
@@ -88,7 +88,8 @@ def register():
 @jwt_required()
 def get_current_user():
     """現在のユーザー情報を取得"""
-    user_id = get_jwt_identity()
+    # identityは文字列として返されるため、整数に変換
+    user_id = int(get_jwt_identity())
     user = Users.query.get(user_id)
     
     if not user:

@@ -15,7 +15,10 @@ export const register = (loginId, password) => {
 };
 
 export const getCurrentUser = () => {
-  return axiosClient.get("/auth/me");
+  return axiosClient.get("/auth/me").then(response => {
+    console.log("getCurrentUser APIレスポンス:", response.data);
+    return response;
+  });
 };
 
 export const verifyToken = () => {

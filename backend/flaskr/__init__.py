@@ -32,7 +32,13 @@ def create_app():
     migrate.init_app(app, db)
     jwt.init_app(app)
     # CORS設定: Authorizationヘッダーを許可
-    CORS(app, supports_credentials=True, allow_headers=["Content-Type", "Authorization"])
+    # 開発環境ではすべてのオリジンからアクセスを許可
+    CORS(
+        app, 
+        supports_credentials=True, 
+        allow_headers=["Content-Type", "Authorization"],
+        origins="*"  # 開発環境用（本番環境では適切なオリジンを指定）
+    )
     
     # --- Blueprint登録 ---
     from .routes.students import students_bp
