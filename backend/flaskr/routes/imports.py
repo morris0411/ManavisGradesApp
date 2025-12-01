@@ -52,15 +52,11 @@ def academic_year_status():
         last_update_year = academic_year_service.get_last_update_year()
         
         # 最終更新日時の取得（表示用）
-        from ..models import SystemSettings
-        from datetime import datetime
-        setting = SystemSettings.query.filter_by(setting_key='last_academic_year_update').first()
+        from ..models import AcademicYearUpdate
+        last_update_record = AcademicYearUpdate.query.order_by(AcademicYearUpdate.academic_year.desc()).first()
         last_update_datetime = None
-        if setting:
-            try:
-                last_update_datetime = datetime.fromisoformat(setting.setting_value).isoformat()
-            except:
-                pass
+        if last_update_record:
+            last_update_datetime = last_update_record.updated_at.isoformat()
         
         can_update, error_message = academic_year_service.can_update_academic_year()
         
