@@ -5,6 +5,10 @@ import { useAuth } from "../../hooks/useAuth";
 
 const SelectSearch = () => {
   const { isAdmin, loading } = useAuth();
+  
+  // デバッグ用: 管理者状態をログ出力
+  console.log("SelectSearch: 管理者状態", { isAdmin, loading });
+  
   return (
     <div className="min-h-screen" style={{ backgroundColor: "#f8fafb" }}>
       {/* Header */}
@@ -88,7 +92,7 @@ const SelectSearch = () => {
               className="text-xl font-bold mb-4"
               style={{ color: "#006580" }}
             >
-              データインポート
+              データ関連
             </h3>
             <div className="space-y-3">
               <Link

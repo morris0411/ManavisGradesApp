@@ -28,10 +28,13 @@ function AdminRoute({ children }) {
   }
   
   if (loading) {
-    return <div>読み込み中...</div>;
+    return <div style={{ padding: "2rem", textAlign: "center" }}>読み込み中...</div>;
   }
   
-  if (!isAdmin) {
+  // ユーザー情報が取得できていない場合は、トークンが無効な可能性がある
+  // その場合はPrivateRouteに任せる（トークンが無効なら自動的にログインページにリダイレクト）
+  if (isAdmin === false && !loading) {
+    // 管理者でない場合はホームにリダイレクト
     return <Navigate to="/" replace />;
   }
   
