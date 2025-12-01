@@ -5,10 +5,10 @@ import { useAuth } from "../../hooks/useAuth";
 
 const SelectSearch = () => {
   const { isAdmin, loading } = useAuth();
-  
+
   // デバッグ用: 管理者状態をログ出力
   console.log("SelectSearch: 管理者状態", { isAdmin, loading });
-  
+
   return (
     <div className="min-h-screen" style={{ backgroundColor: "#f8fafb" }}>
       {/* Header */}
@@ -70,10 +70,10 @@ const SelectSearch = () => {
                 to="/exams/search"
                 className="block w-full px-6 py-3 text-white no-underline rounded-md font-medium text-center transition hover:shadow-lg"
                 style={{
-                  backgroundColor: "#2faac9ff"
+                  backgroundColor: "#1BA4C3"
                 }}
-                onMouseEnter={(e) => e.target.style.backgroundColor = "#006580"}
-                onMouseLeave={(e) => e.target.style.backgroundColor = "#0086A9"}
+                onMouseEnter={(e) => e.target.style.backgroundColor = "#0086A9"}
+                onMouseLeave={(e) => e.target.style.backgroundColor = "#1BA4C3"}
               >
                 模試から検索
               </Link>
@@ -110,10 +110,10 @@ const SelectSearch = () => {
                 to="/import/exams"
                 className="block w-full px-6 py-3 text-white no-underline rounded-md font-medium text-center transition hover:shadow-lg"
                 style={{
-                  backgroundColor: "#0086A9"
+                  backgroundColor: "#1BA4C3"
                 }}
-                onMouseEnter={(e) => e.target.style.backgroundColor = "#006580"}
-                onMouseLeave={(e) => e.target.style.backgroundColor = "#0086A9"}
+                onMouseEnter={(e) => e.target.style.backgroundColor = "#0086A9"}
+                onMouseLeave={(e) => e.target.style.backgroundColor = "#1BA4C3"}
               >
                 模試Excelインポート
               </Link>
