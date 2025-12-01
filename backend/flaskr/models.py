@@ -116,9 +116,8 @@ class Users(db.Model):
     is_admin = db.Column(db.Boolean, nullable=False, default=False)
 
 
-class SystemSettings(db.Model):
-    __tablename__ = 'system_settings'
+class AcademicYearUpdate(db.Model):
+    __tablename__ = 'academic_year_updates'
     
-    setting_key = db.Column(db.String, primary_key=True)
-    setting_value = db.Column(db.String, nullable=False)
+    academic_year = db.Column(db.Integer, primary_key=True)
     updated_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)

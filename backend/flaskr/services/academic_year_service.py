@@ -1,6 +1,6 @@
 from datetime import date, datetime
 from .. import db
-from ..models import Students, SystemSettings
+from ..models import Students, AcademicYearUpdate
 
 def get_academic_year(target_date=None):
     """
@@ -21,14 +21,10 @@ def get_last_update_year():
     前回の年度更新が実行された年度を取得
     """
     try:
-        setting = SystemSettings.query.filter_by(setting_key='last_academic_year_update').first()
-        if setting:
-            try:
-                # 日時文字列から年度を抽出
-                last_update = datetime.fromisoformat(setting.setting_value)
-                return get_academic_year(last_update.date())
-            except:
-                return None
+        # 最新の更新年度を取得（academic_yearの降順でソート）
+        last_update = AcademicYearUpdate.query.order_by(AcademicYearUpdate.academic_year.desc()).first()
+        if last_update:
+            return last_update.academic_year
         return None
     except Exception:
         # テーブルが存在しない場合はNoneを返す
@@ -106,17 +102,18 @@ def execute_academic_year_update():
     
     # 更新日時を記録
     now = datetime.utcnow()
-    setting = SystemSettings.query.filter_by(setting_key='last_academic_year_update').first()
-    if setting:
-        setting.setting_value = now.isoformat()
-        setting.updated_at = now
+    current_year = get_academic_year()
+    
+    # 現在の年度の更新レコードを取得または作成
+    update_record = AcademicYearUpdate.query.filter_by(academic_year=current_year).first()
+    if update_record:
+        update_record.updated_at = now
     else:
-        setting = SystemSettings(
-            setting_key='last_academic_year_update',
-            setting_value=now.isoformat(),
+        update_record = AcademicYearUpdate(
+            academic_year=current_year,
             updated_at=now
         )
-        db.session.add(setting)
+        db.session.add(update_record)
     
     db.session.commit()
     
