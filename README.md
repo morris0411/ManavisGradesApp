@@ -491,7 +491,6 @@ npm run dev
 | `pip install -r requirements.txt`             | 依存関係をインストール                 |
 | `pip install --upgrade pip setuptools wheel`  | pipとビルドツールをアップグレード     |
 | `bash build.sh`                               | ビルドスクリプトを実行（依存関係インストール + マイグレーション） |
-| `python create_admin.py <login_id> <password>` | 管理者アカウントを作成                 |
 
 #### フロントエンド
 
@@ -648,8 +647,7 @@ JWT_SECRET_KEY=your-secret-key-here
 - 本番環境では適切なCORS設定を行ってください
 - 年度更新機能は4月1日以降のみ実行可能で、同じ年度内では1回のみ実行できます
 - 試験データのインポート時、同じ年度・模試コードの組み合わせが既に存在する場合はエラーになります
-- 新規ユーザー登録は管理者のみが実行可能です。最初の管理者アカウントは`backend/create_admin.py`スクリプトで作成してください
-- 管理者アカウントの作成: `python create_admin.py <login_id> <password>`
+- 新規ユーザー登録は管理者のみが実行可能です。
 
 ## ライセンス
 
