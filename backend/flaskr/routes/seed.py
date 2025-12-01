@@ -18,8 +18,14 @@ def seed_exam_master():
 
 @seed_bp.route("/seed_subject_master", methods=["POST"])
 def seed_subject_master():
+    # ファイルを取得
+    file = request.files.get("subject_master")
+    if not file:
+        return jsonify({"error": "subject_master file is required"}), 400
+
     try:
-        result = import_service.seed_subject_master_data()
+        # ファイルを渡す
+        result = import_service.seed_subject_master_data(file)
         return jsonify({
             "seeded": True,
             "count": result
