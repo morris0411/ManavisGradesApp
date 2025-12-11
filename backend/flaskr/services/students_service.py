@@ -54,7 +54,7 @@ def get_student_detail(student_id):
     - 各模試の志望校情報（university_name, faculty_name, department_name, preference_order, judgement）
     - 各模試の科目情報（subject_name, score, deviation_value）
     """
-    student = Students.query.get(student_id)
+    student = db.session.get(Students, student_id)
     if not student:
         return None
 
