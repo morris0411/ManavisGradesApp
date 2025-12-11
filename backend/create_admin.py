@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """
-管理者アカウントを作成するスクリプト
+CLIで管理者アカウントを作成するスクリプト
 
 使用方法:
     python create_admin.py <login_id> <password>

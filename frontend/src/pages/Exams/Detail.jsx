@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useMemo } from "react";
 import { useParams, Link } from "react-router-dom";
 import { fetchExamResults, filterExamResults, searchExams, fetchTopUniversities } from "../../api/exams";
-import { Breadcrumb } from "@/components/layout/Breadcrumb";
+import { Breadcrumb } from "@/pages/components/Breadcrumb";
 import { getJudgmentColor } from "../../utils/subject-utils";
 
 const ExamsDetail = () => {

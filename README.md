@@ -33,7 +33,7 @@
 
 河合塾マナビス 全統模試管理システム
 
-## プロジェクトについて
+### 概要
 
 本アプリケーションは、河合塾マナビスの全統模試の成績を管理するためのWebアプリケーションです。学生情報と試験結果の検索、データのインポート、成績の可視化などの機能を提供します。
 
@@ -297,28 +297,31 @@ ManavisGradesApp/
     │   │   ├── exams.jsx
     │   │   ├── imports.jsx
     │   │   └── students.jsx
-    │   ├── components/
-    │   │   ├── features/
-    │   │   │   ├── dashboard/
-    │   │   │   │   ├── tabs/
-    │   │   │   │   └── dashboard.tsx
-    │   │   │   └── university/
-    │   │   │       └── university-judgment.tsx
-    │   │   ├── layout/
-    │   │   │   ├── Breadcrumb.tsx
-    │   │   │   └── header.tsx
-    │   │   ├── shared/
-    │   │   └── ui/
+    │   ├── assets/
+    │   ├── hooks/
+    │   │   └── useAuth.js
+    │   ├── lib/
+    │   │   └── utils.ts
     │   ├── pages/
     │   │   ├── Admin/
     │   │   ├── Auth/
     │   │   ├── Exams/
     │   │   ├── Home/
-    │   │   └── Students/
-    │   ├── hooks/
+    │   │   │   ├── Import/
+    │   │   │   ├── Search/
+    │   │   │   └── index.jsx
+    │   │   ├── Students/
+    │   │   └── components/
+    │   │       ├── Breadcrumb.tsx
+    │   │       ├── badge.tsx
+    │   │       ├── card.tsx
+    │   │       ├── select.tsx
+    │   │       └── tabs.tsx
     │   ├── utils/
     │   ├── App.jsx
-    │   └── main.jsx
+    │   ├── index.css
+    │   ├── main.jsx
+    │   └── vite-env.d.ts
     ├── public/
     ├── package.json
     ├── vite.config.js
