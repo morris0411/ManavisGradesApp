@@ -1,0 +1,14 @@
+[tool.black]
+line-length = 88
+target-version = ["py310"]
+skip-string-normalization = false
+extend-exclude = '''
+(
+  ^/venv/
+| ^/migrations/
+| ^/tests/instance/
+| ^/__pycache__/
+)
+'''
+
+

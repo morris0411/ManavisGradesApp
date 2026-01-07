@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { register } from "../../api/auth";
-import { Breadcrumb } from "@/components/layout/Breadcrumb";
+import { Breadcrumb } from "@/pages/components/Breadcrumb";
 
 export default function RegisterUser() {
   const [loginId, setLoginId] = useState("");
@@ -61,7 +61,7 @@ export default function RegisterUser() {
       }, 3000);
     } catch (err) {
       console.error("ユーザー登録エラー:", err);
-      
+
       // エラーメッセージの設定
       if (err.response) {
         // サーバーからのエラーレスポンス
@@ -100,17 +100,17 @@ export default function RegisterUser() {
 
       {/* Main Content */}
       <div className="max-w-2xl mx-auto px-6 py-8">
-        <div 
+        <div
           className="w-full p-8 rounded-lg"
-          style={{ 
-            backgroundColor: "#ffffff", 
-            boxShadow: "0 4px 12px rgba(0, 101, 128, 0.15)" 
+          style={{
+            backgroundColor: "#ffffff",
+            boxShadow: "0 4px 12px rgba(0, 101, 128, 0.15)"
           }}
         >
           <div className="mb-8 text-center">
-            <h1 
+            <h1
               className="text-3xl font-bold mb-2"
-              style={{ 
+              style={{
                 background: "linear-gradient(135deg, #1BA4C3 0%, #0086A9 50%, #006580 100%)",
                 WebkitBackgroundClip: "text",
                 WebkitTextFillColor: "transparent",
@@ -125,9 +125,9 @@ export default function RegisterUser() {
           </div>
 
           {error && (
-            <div 
+            <div
               className="mb-4 p-3 rounded-md"
-              style={{ 
+              style={{
                 backgroundColor: "#fee2e2",
                 color: "#dc2626",
                 border: "1px solid #fecaca"
@@ -138,9 +138,9 @@ export default function RegisterUser() {
           )}
 
           {success && (
-            <div 
+            <div
               className="mb-4 p-3 rounded-md"
-              style={{ 
+              style={{
                 backgroundColor: "#d1fae5",
                 color: "#065f46",
                 border: "1px solid #a7f3d0"
@@ -152,7 +152,7 @@ export default function RegisterUser() {
 
           <form onSubmit={handleSubmit}>
             <div className="mb-4">
-              <label 
+              <label
                 htmlFor="login_id"
                 className="block text-sm font-medium mb-2"
                 style={{ color: "#006580" }}
@@ -176,7 +176,7 @@ export default function RegisterUser() {
             </div>
 
             <div className="mb-4">
-              <label 
+              <label
                 htmlFor="password"
                 className="block text-sm font-medium mb-2"
                 style={{ color: "#006580" }}
@@ -201,7 +201,7 @@ export default function RegisterUser() {
             </div>
 
             <div className="mb-6">
-              <label 
+              <label
                 htmlFor="confirm_password"
                 className="block text-sm font-medium mb-2"
                 style={{ color: "#006580" }}
@@ -230,7 +230,7 @@ export default function RegisterUser() {
                 type="button"
                 onClick={() => navigate("/")}
                 className="flex-1 px-6 py-3 rounded-md font-medium transition hover:shadow-lg"
-                style={{ 
+                style={{
                   backgroundColor: "#94a3b8",
                   color: "#ffffff"
                 }}
@@ -247,7 +247,7 @@ export default function RegisterUser() {
                 type="submit"
                 disabled={loading || success}
                 className="flex-1 px-6 py-3 text-white rounded-md font-medium transition hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
-                style={{ 
+                style={{
                   backgroundColor: (loading || success) ? "#94a3b8" : "#1BA4C3"
                 }}
                 onMouseEnter={(e) => {

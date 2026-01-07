@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { fetchStudentDetail } from "../../api/students";
-import { StudentPerformanceHeader } from "@/components/layout/header";
-import { PerformanceDashboard } from "@/components/features/dashboard";
-import { UniversityJudgmentSection } from "@/components/features/university/university-judgment";
-import { Breadcrumb } from "@/components/layout/Breadcrumb";
+import { StudentPerformanceHeader } from "./components/StudentHeader";
+import { PerformanceDashboard } from "./components/PerformanceDashboard";
+import { UniversityJudgmentSection } from "./components/UniversityJudgment";
+import { Breadcrumb } from "@/pages/components/Breadcrumb";
 
 const StudentDetail = () => {
   const { studentId } = useParams();

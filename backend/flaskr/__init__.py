@@ -11,8 +11,11 @@ db = SQLAlchemy()
 migrate = Migrate()
 jwt = JWTManager()
 
+
 def create_app():
-    load_dotenv(dotenv_path=pathlib.Path(__file__).resolve().parents[1] / ".env", override=True)
+    load_dotenv(
+        dotenv_path=pathlib.Path(__file__).resolve().parents[1] / ".env", override=True
+    )
     app = Flask(__name__)
 
     db_url = os.getenv("DATABASE_URL", "").strip()
@@ -23,10 +26,14 @@ def create_app():
 
     app.config["SQLALCHEMY_DATABASE_URI"] = db_url
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
-    
+
     # JWT設定
-    app.config["JWT_SECRET_KEY"] = os.getenv("JWT_SECRET_KEY", "your-secret-key-change-in-production")
-    app.config["JWT_ACCESS_TOKEN_EXPIRES"] = False  # トークンの有効期限を無期限に設定（必要に応じて変更）
+    app.config["JWT_SECRET_KEY"] = os.getenv(
+        "JWT_SECRET_KEY", "your-secret-key-change-in-production"
+    )
+    app.config["JWT_ACCESS_TOKEN_EXPIRES"] = (
+        False  # トークンの有効期限を無期限に設定（必要に応じて変更）
+    )
 
     db.init_app(app)
     migrate.init_app(app, db)
@@ -34,12 +41,12 @@ def create_app():
     # CORS設定: Authorizationヘッダーを許可
     # 開発環境ではすべてのオリジンからアクセスを許可
     CORS(
-        app, 
-        supports_credentials=True, 
+        app,
+        supports_credentials=True,
         allow_headers=["Content-Type", "Authorization"],
-        origins="*"  # 開発環境用（本番環境では適切なオリジンを指定）
+        origins="*",  # 開発環境用（本番環境では適切なオリジンを指定）
     )
-    
+
     # --- Blueprint登録 ---
     from .routes.students import students_bp
     from .routes.exams import exams_bp
@@ -50,10 +57,11 @@ def create_app():
     app.register_blueprint(exams_bp, url_prefix="/api")
     app.register_blueprint(imports_bp, url_prefix="/api")
     app.register_blueprint(auth_bp, url_prefix="/api")
-    
+
     # 開発環境でのみseedエンドポイントを有効化
     if os.getenv("FLASK_ENV") == "development" or os.getenv("ENABLE_SEED") == "true":
         from .routes.seed import seed_bp
+
         app.register_blueprint(seed_bp, url_prefix="/api")
-    
+
     return app
