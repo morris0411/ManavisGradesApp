@@ -1,4 +1,5 @@
 import io
+import logging
 import pandas as pd
 import numpy as np
 from sqlalchemy import text
@@ -17,6 +18,8 @@ from ..models import (
     Departments,
     ExamJudgements,
 )
+
+logger = logging.getLogger(__name__)
 
 # 開催順（sort_key）の初期値マップ（exam_code -> sort_key）
 ORDER_BY_CODE = {
@@ -91,16 +94,18 @@ def _read_students_csv(file: FileStorage) -> pd.DataFrame:
 
 def _debug_df(title: str, df: pd.DataFrame):
     """開発用: DFの内容をターミナルに出力（先頭10行・列名・shape）"""
+    if not logger.isEnabledFor(logging.DEBUG):
+        return
     try:
-        print(f"\n=== {title} ===")
-        print(f"shape={df.shape}")
-        print(f"columns={list(df.columns)}")
+        logger.debug("=== %s ===", title)
+        logger.debug("shape=%s", df.shape)
+        logger.debug("columns=%s", list(df.columns))
         # 先頭10行
         with pd.option_context("display.max_columns", None, "display.width", 200):
-            print(df.head(10).to_string(index=False))
-        print("=== end ===\n")
-    except Exception as e:
-        print(f"[debug print failed] {title}: {e}")
+            logger.debug("head(10):\n%s", df.head(10).to_string(index=False))
+        logger.debug("=== end ===")
+    except Exception:
+        logger.exception("debug_df failed: %s", title)
 
 
 def _fix_seq(table: str, id_col: str):
