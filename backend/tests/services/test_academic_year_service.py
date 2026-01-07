@@ -4,7 +4,6 @@ import pytest
 
 from flaskr.models import Students, AcademicYearUpdate
 from flaskr.services import academic_year_service
-from flaskr import db
 
 
 class _FixedDate(date):
@@ -170,5 +169,3 @@ def test_execute_academic_year_update_raises_before_april(monkeypatch, session):
     # ロールバックされていることを確認（学年は変わらない）
     session.refresh(s)
     assert s.grade == "高3"
-
-

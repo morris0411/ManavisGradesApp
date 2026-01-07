@@ -40,7 +40,9 @@ def test_import_students_200_when_ok(client, monkeypatch):
         lambda _file: {"inserted": 1, "updated": 0, "skipped": 0, "total_in_file": 1},
     )
     data = {"file": (io.BytesIO(b"dummy"), "students.csv")}
-    res = client.post("/api/imports/students", data=data, content_type="multipart/form-data")
+    res = client.post(
+        "/api/imports/students", data=data, content_type="multipart/form-data"
+    )
     assert res.status_code == 200
     body = res.get_json()
     assert body["ok"] is True
@@ -57,7 +59,9 @@ def test_import_exams_xlsx_200_when_ok(client, monkeypatch):
         lambda _file: {"inserted": {"exams": 0}, "skipped_students": 0},
     )
     data = {"file": (io.BytesIO(b"dummy"), "exams.xlsx")}
-    res = client.post("/api/imports/exams_xlsx", data=data, content_type="multipart/form-data")
+    res = client.post(
+        "/api/imports/exams_xlsx", data=data, content_type="multipart/form-data"
+    )
     assert res.status_code == 200
     body = res.get_json()
     assert body["ok"] is True
@@ -69,7 +73,9 @@ def test_academic_year_status_200(client, monkeypatch):
 
     monkeypatch.setattr(academic_year_service, "get_academic_year", lambda: 2025)
     monkeypatch.setattr(academic_year_service, "get_last_update_year", lambda: 2024)
-    monkeypatch.setattr(academic_year_service, "can_update_academic_year", lambda: (True, None))
+    monkeypatch.setattr(
+        academic_year_service, "can_update_academic_year", lambda: (True, None)
+    )
 
     res = client.get("/api/imports/academic_year_status")
     assert res.status_code == 200
@@ -100,5 +106,3 @@ def test_update_academic_year_200(client, monkeypatch):
 def test_404_for_unknown_route(client):
     res = client.get("/api/does_not_exist")
     assert res.status_code == 404
-
-

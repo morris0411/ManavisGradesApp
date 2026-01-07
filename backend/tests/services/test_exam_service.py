@@ -81,7 +81,9 @@ def test_search_exams_returns_num_students_and_link(session):
     _create_basic_exam_data(session)
 
     # 2024 年の共テを検索
-    results = exam_service.search_exams(year=2024, exam_type="共テ", exam_name="共通テスト本試")
+    results = exam_service.search_exams(
+        year=2024, exam_type="共テ", exam_name="共通テスト本試"
+    )
 
     assert len(results) == 1
     exam = results[0]
@@ -145,5 +147,3 @@ def test_filter_exam_results_basic_structure(session):
     assert first["faculty_name"] == "理学部"
     assert first["department_name"] == "数学科"
     assert first["judgement_kyote"] == "A"
-
-

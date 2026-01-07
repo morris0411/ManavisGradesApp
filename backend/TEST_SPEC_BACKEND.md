@@ -5,6 +5,9 @@
 - 対象プロジェクト: `ManavisGradesApp` バックエンド（Flask + SQLAlchemy）
 - テストレベル: 単体テスト（主に services 層、必要に応じて routes 層）
 - 使用ツール: `pytest`
+- コードスタイル:
+  - フォーマッタ: `black`
+  - リンター: `flake8`
 - 目的:
   - 年度更新や成績集計など、ビジネスロジックが壊れていないことを自動で確認する
   - 仕様変更やリファクタリング時のリグレッション防止
@@ -64,6 +67,16 @@
   - `conftest.py` にテスト用アプリケーションコンテキスト／DB セッション用の fixture を定義し、各テストでクリーンな状態を用意する
 - 日付依存ロジック:
   - `academic_year_service` 内の `date.today()` 呼び出しは pytest の monkeypatch 等でモックしてテストする
+
+- コード整形 / 静的解析（推奨）:
+  - 実行ディレクトリ: `backend/`
+  - コマンド例（Windows / venv 想定）:
+
+    ```powershell
+    .\venv\Scripts\python.exe -m black .
+    .\venv\Scripts\python.exe -m flake8 .
+    .\venv\Scripts\python.exe -m pytest
+    ```
 
 ---
 

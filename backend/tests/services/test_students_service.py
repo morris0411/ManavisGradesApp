@@ -27,8 +27,12 @@ def _create_student(
 
 
 def test_search_students_no_filters_returns_all_in_id_order(session):
-    _create_student(session, 1002, "山本花子", "ヤマモトハナコ", "大阪高校", "高3", "既卒")
-    _create_student(session, 1001, "山田太郎", "ヤマダタロウ", "東京高校", "高2", "在籍")
+    _create_student(
+        session, 1002, "山本花子", "ヤマモトハナコ", "大阪高校", "高3", "既卒"
+    )
+    _create_student(
+        session, 1001, "山田太郎", "ヤマダタロウ", "東京高校", "高2", "在籍"
+    )
     _create_student(session, 2001, "佐藤次郎", None, "東京高校", "高1", "退会")
     session.commit()
 
@@ -39,8 +43,12 @@ def test_search_students_no_filters_returns_all_in_id_order(session):
 
 
 def test_search_students_filter_by_name_and_status(session):
-    _create_student(session, 1001, "山田太郎", "ヤマダタロウ", "東京高校", "高2", "在籍")
-    _create_student(session, 1002, "山本花子", "ヤマモトハナコ", "大阪高校", "高3", "既卒")
+    _create_student(
+        session, 1001, "山田太郎", "ヤマダタロウ", "東京高校", "高2", "在籍"
+    )
+    _create_student(
+        session, 1002, "山本花子", "ヤマモトハナコ", "大阪高校", "高3", "既卒"
+    )
     _create_student(session, 2001, "佐藤次郎", None, "東京高校", "高1", "退会")
     session.commit()
 
@@ -53,8 +61,12 @@ def test_search_students_filter_by_name_and_status(session):
 
 
 def test_search_students_filter_by_student_id_string(session):
-    _create_student(session, 1001, "山田太郎", "ヤマダタロウ", "東京高校", "高2", "在籍")
-    _create_student(session, 1002, "山本花子", "ヤマモトハナコ", "大阪高校", "高3", "既卒")
+    _create_student(
+        session, 1001, "山田太郎", "ヤマダタロウ", "東京高校", "高2", "在籍"
+    )
+    _create_student(
+        session, 1002, "山本花子", "ヤマモトハナコ", "大阪高校", "高3", "既卒"
+    )
     session.commit()
 
     result = students_service.search_students(keyword="1001")
@@ -67,5 +79,3 @@ def test_get_student_detail_returns_none_when_not_found(session):
     # 生徒が登録されていない状態
     result = students_service.get_student_detail(9999)
     assert result is None
-
-

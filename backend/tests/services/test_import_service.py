@@ -10,11 +10,19 @@ from flaskr.services import import_service
 
 
 def _csv_filestorage(text: str, filename: str = "students.csv") -> FileStorage:
-    return FileStorage(stream=io.BytesIO(text.encode("utf-8")), filename=filename, content_type="text/csv")
+    return FileStorage(
+        stream=io.BytesIO(text.encode("utf-8")),
+        filename=filename,
+        content_type="text/csv",
+    )
 
 
 def _dummy_filestorage(filename: str = "file.bin") -> FileStorage:
-    return FileStorage(stream=io.BytesIO(b"dummy"), filename=filename, content_type="application/octet-stream")
+    return FileStorage(
+        stream=io.BytesIO(b"dummy"),
+        filename=filename,
+        content_type="application/octet-stream",
+    )
 
 
 def test_import_students_from_csv_inserts_updates_and_marks_resigned(session):
@@ -47,7 +55,7 @@ def test_import_students_from_csv_inserts_updates_and_marks_resigned(session):
     # pandas.read_csv(header=None) 前提: A..H の8列を用意し、C..H を取り込ませる
     csv_text = "\n".join(
         [
-            # A,B, C(student_id), D(name), E(kana), F(admission_date), G(school), H(grade)
+            # A,B, C(student_id), D(name), E(kana), F(adm_date), G(school), H(grade)
             "x,x,1001,山田太郎,ヤマダタロウ,2025/04/01,東京高校,高2",
             "x,x,1002,山本花子,,2025/04/02,大阪高校,高1",
             "x,x,abc,無効行,,2025/04/03,無効校,高3",
@@ -117,7 +125,9 @@ def test_seed_subject_master_data_inserts_new_and_skips_existing_and_invalid(ses
             "x,国語",
         ]
     )
-    result = import_service.seed_subject_master_data(_csv_filestorage(csv_text, filename="subject_master.csv"))
+    result = import_service.seed_subject_master_data(
+        _csv_filestorage(csv_text, filename="subject_master.csv")
+    )
 
     assert result["subjects"] == 2
     assert result["existing"] == 1
@@ -128,7 +138,11 @@ def test_seed_subject_master_data_inserts_new_and_skips_existing_and_invalid(ses
 
 def test_import_exams_from_xlsx_missing_campus_code_column_raises(session, monkeypatch):
     monkeypatch.setattr(import_service, "_debug_df", lambda *_args, **_kwargs: None)
-    monkeypatch.setattr(import_service.pd, "read_excel", lambda *_args, **_kwargs: pd.DataFrame({"A": [1]}))
+    monkeypatch.setattr(
+        import_service.pd,
+        "read_excel",
+        lambda *_args, **_kwargs: pd.DataFrame({"A": [1]}),
+    )
     with pytest.raises(ValueError) as e:
         import_service.import_exams_from_xlsx(_dummy_filestorage("exams.xlsx"))
     assert "校舎コード" in str(e.value)
@@ -161,7 +175,9 @@ def test_import_exams_from_xlsx_duplicate_exam_raises(session, monkeypatch):
             status="在籍",
         )
     )
-    session.add(ExamMaster(exam_code=1, exam_name="第1回全統共通テスト模試", sort_key=10))
+    session.add(
+        ExamMaster(exam_code=1, exam_name="第1回全統共通テスト模試", sort_key=10)
+    )
     session.commit()
 
     # 既に同じ (exam_code, exam_year) が存在 → duplicate 判定
@@ -170,7 +186,12 @@ def test_import_exams_from_xlsx_duplicate_exam_raises(session, monkeypatch):
 
     df = pd.DataFrame(
         [
-            {"校舎コード": "940", "マナビス生番号": "1001", "年度": "2025", "模試": "1"},
+            {
+                "校舎コード": "940",
+                "マナビス生番号": "1001",
+                "年度": "2025",
+                "模試": "1",
+            },
         ]
     )
     monkeypatch.setattr(import_service.pd, "read_excel", lambda *_args, **_kwargs: df)
@@ -179,5 +200,3 @@ def test_import_exams_from_xlsx_duplicate_exam_raises(session, monkeypatch):
         import_service.import_exams_from_xlsx(_dummy_filestorage("exams.xlsx"))
     assert "duplicate:" in str(e.value)
     assert "2025" in str(e.value)
-
-

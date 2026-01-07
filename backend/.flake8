@@ -1,0 +1,14 @@
+[flake8]
+max-line-length = 88
+extend-ignore = E203,W503
+exclude =
+    venv,
+    migrations,
+    tests/instance,
+    __pycache__
+
+# よくあるパターン: パッケージの公開API用の import は未使用扱い(F401)になる
+per-file-ignores =
+    flaskr/__init__.py:F401
+
+
